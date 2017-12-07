@@ -1,0 +1,11 @@
+---
+{:namespace    user
+ :dependencies [[org.clojure/clojure "1.8.0"]]
+ :prompt       "user>"
+}
+---
+user> (+ 1 1)
+1
+user> (conj #{:foo :bar} :baz)
+#{:foo :bar :baz}
+user>
