@@ -1,6 +1,7 @@
 (ns examples
   (:require [clojure.java.io :as io] 
             [clojure.tools.reader.reader-types :refer [read-char]]
+            [clojure.tools.analyzer :refer [analyze]]
             [rewrite-clj.parser :as p]
             [rewrite-clj.reader :refer [string-reader]])
   (:import java.io.Reader))
