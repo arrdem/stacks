@@ -1,8 +1,6 @@
-(defproject scratch "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject me.arrdem/stacks "0.1.0-SNAPSHOT"
+  :description "Stacks of docs - sketches at better documentation tools."
+  :url "https://github.com/arrdem/stacks"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [rewrite-clj "LATEST"]
-                 [circleci/clj-yaml "0.5.6"]])
+  :dependencies [[org.clojure/clojure "1.8.0"]])
