@@ -1,0 +1,4 @@
+stacks.examples> (type *e)
+java.lang.Exception
+CompilerException java.lang.RuntimeException: Invalid token: s/, compiling:(/home/arrdem/doc/hobby/programming/lang/clojure/me/arrdem/stacks/test/stacks/sessions_test.clj:7:8)
+stacks.examples>
