@@ -13,6 +13,11 @@ A little google searching may uncover some examples, but by a large I find that 
 
 In writing [Grimoire](http://conj.io), I kept banging back into wanting to write documentation for topics such as destructuring or particular interfaces like sequences which had no logical home in the documentation of a single namespace or var.
 
+Browsing good documentation should be a lot more like browsing the stacks in a library.
+Search and cross-reference need to be strongly supported and aggressively used.
+One should be able to wander into an area and quickly survey it.
+Related material both more specific and more general should be easy to discover and access.
+
 This project is an effort to explore writing a documentation tool somewhat in the style of sphinx, Eg.
 
 - Offering good markup ergonomics with a convenient to learn syntax or set of small languages
