@@ -8,4 +8,4 @@ user> (+ 1 1)
 1
 user> (conj #{:foo :bar} :baz)
 #{:foo :bar :baz}
-user>
+user> ^d
