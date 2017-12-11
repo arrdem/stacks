@@ -47,18 +47,20 @@ user>
 
 Example files can be loaded into a data structure, describing the example as a whole and each given `(input, output)` pair.
 
-For instance, in one version of stacks the above file loaded to the datastructure
+For instance, in one version of stacks the above file loaded to the data structure
 
 ```clj
-{:tag :examples/session,
- :profile {:prompt "^[^>]*?> ",
-		   :namespace user,
-		   :dependencies [[org.clojure/clojure "1.8.0"]]},
- :examples ({:tag :examples/example,
-			 :form "(+ 1 1)", :tail "1"}
-			{:tag :examples/example,
-			 :form "(conj #{:foo :bar} :baz)",
-			 :tail "#{:foo :bar :baz}"})}
+stacks.session> (parse-session (slurp "example.repl"))
+{:tag :stacks.session/session,
+ :profile {:prompt "user>",
+           :namespace user,
+           :dependencies [[org.clojure/clojure "1.8.0"]]},
+ :pairs ({:tag :stacks.session/pair,
+          :input "(+ 1 1)",
+          :results "1"}
+         {:tag :stacks.session/pair,
+          :input "(conj #{:foo :bar} :baz)",
+          :results "#{:foo :bar :baz}"})}
 ```
 
 From this structure and given the namespace in which the session occurs it would be possible to use `clojure.tools.analyzer.jvm` to perform expression analysis & macroexpansion for full syntax highlighting.
@@ -74,8 +76,6 @@ There simply isn't a broad enough understanding of or support for other notation
 [var-link](https://github.com/clojure-grimoire/var-link) isn't the notation you want, it's too verbose but it's the right concept.
 I propose that the URI patterns `def:name`, `def:namespace/name`, `namespace:name`, `topic:name`, `class:classname`, `javadoc:classname`, `javadoc:classname/methodname` and such are sufficiently terse to be author friendly, unobtrusive in source code and trivial to write transformers for when performing internal linking of documentation.
 Furthermore, the URI syntax is already legal and expected to be well-behaved nested within Markdown as the target of links and images.
-
-## Document structures
 
 ## License
 
