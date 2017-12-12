@@ -82,6 +82,37 @@ There simply isn't a broad enough understanding of or support for other notation
 I propose that the URI patterns `def:name`, `def:namespace/name`, `namespace:name`, `topic:name`, `class:classname`, `javadoc:classname`, `javadoc:classname/methodname` and such are sufficiently terse to be author friendly, unobtrusive in source code and trivial to write transformers for when performing internal linking of documentation.
 Furthermore, the URI syntax is already legal and expected to be well-behaved nested within Markdown as the target of links and images.
 
+## Articles
+
+REPL sessions are great, but aren't always the appropriate pedagogical tool, especially when much explaining is required.
+
+One part of the stacks project is a hack to extend [markdown-clj](https://github.com/yogthos/markdown-clj) with fuller support for syntax highlighting.
+Out of the box, markdown-clj consumes triple quoted code blocks line-at-a-time.
+By building up code triple quoted blocks into a buffer and applying a transformer to the buffer contents when the end of a triple quote block is reached, we enable the modular use of static highlighters, analyzers and evaluators.
+
+For instance, one could write a code block which explicitly lists its dependencies as if it were a REPL session
+
+    ```clj :dependencies [[org.clojure/clojure "1.0.0"]] :name primordial
+    user> (+ 1 1)
+    2
+    ```
+
+This could also be used to build up literate programming features, where code blocks can refer to carried sessions enabling prose to wrap around continued examples.
+
+    ```clj :dependencies [[org.clojure/clojure "1.0.0"]] :name primordial
+    user> (def foo 3)
+    #'user/foo
+    ```
+
+    Some continued text in the middle of the example, and now we want to use something from the above session
+
+    ```clj :session primordial
+    user> (+ foo 3)
+    6
+    ```
+
+This could even be combined with the REPL features from above.
+
 ## License
 
 Copyright © 2017 Reid "arrdem" McKenzie
