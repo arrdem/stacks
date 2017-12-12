@@ -12,7 +12,6 @@
         (let [res (io/resource example)]
           (t/is res)
           (t/is (s/parse-session (slurp res))))
-
       ;;--------------------
       "test-no-header.repl"
       "test-just-header.repl"
