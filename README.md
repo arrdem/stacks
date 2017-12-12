@@ -104,7 +104,8 @@ This could also be used to build up literate programming features, where code bl
     #'user/foo
     ```
 
-    Some continued text in the middle of the example, and now we want to use something from the above session
+    Some continued text in the middle of the example, and now
+    we want to use something from the above session
 
     ```clj :session primordial
     user> (+ foo 3)
