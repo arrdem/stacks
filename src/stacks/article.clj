@@ -7,8 +7,14 @@
             [markdown.common :as mc]
             [markdown.core :refer [md-to-html-string*]]))
 
-(def ^:private arg-pattern
-  #":([\w/]+)\s+(\"(([^\"]|\\\")*?)\"|\w+)\s*")
+(defn read-all-string [text]
+  (loop [rdr     (clojure.lang.LineNumberingPushbackReader.
+                  (java.io.StringReader. text))
+         results []]
+    (let [res (read rdr false :eof)]
+      (if-not (= res :eof)
+        (recur rdr (conj results res))
+        results))))
 
 (defn parse-options
   "Implementation detail.
@@ -20,14 +26,7 @@
 
   Returns a map of keywords to string values."
   [text]
-  (->> (re-seq arg-pattern text)
-       (map (fn [[_ k s]]
-              [(apply keyword (string/split k #"/" 1))
-               (-> s
-                   (string/replace #"^\"" "")
-                   (string/replace #"\"$" "")
-                   (string/replace #"\\\"" "\""))]))
-       (into {})))
+  (apply hash-map (read-all-string text)))
 
 (defn make-codeblock-handler
   "Function of a code block transformer, used to build a markdown-clj handler for code blocks.
