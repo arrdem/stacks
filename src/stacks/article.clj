@@ -47,7 +47,7 @@
   2
   ```
 
-  Accepts a handler function (fn [language options text]) -> html,
+  Accepts a handler function (fn [state language options text]) -> [state, html],
   closes over that function, and calls it to render full buffers being
   whole blocks of code to HTML.
 
@@ -67,10 +67,11 @@
                               (apply str (first (string/split next-line #"```"))))]
       (cond
         codeblock-end
-        [(handler codeblock-lang codeblock-options codeblock-buffer)
-         (-> state
-             (assoc :last-line-empty? true)
-             (dissoc :code :codeblock :codeblock-end :codeblock-buffer :codeblock-lang :codeblock-options))]
+        (let [[state text] (handler state codeblock-lang codeblock-options codeblock-buffer)]
+          [text
+           (-> state
+               (assoc :last-line-empty? true)
+               (dissoc :code :codeblock :codeblock-end :codeblock-buffer :codeblock-lang :codeblock-options))])
 
         (and next-line-closes?
              codeblock)
@@ -124,7 +125,7 @@
 (defn make-transformer-vector
   "Compute a markdown-clj transformers vector which will handle code-blocks more generally.
 
-  Accepts a transformer function (fn [language options text]) -> html,
+  Accepts a transformer function (fn [state language options text]) -> [state, html],
   returning a new vector of markdown-clj transformers. The returned
   transformers should be used as `:replacement-transformers` when
   calling into markdown-clj."
@@ -139,10 +140,10 @@
 
 (defmulti highlight-code
   "Highlights the given text as code in the given language, returning raw HTML."
-  (fn [language _options _text] language))
+  (fn [_state language _options _text] language))
 
-(defmethod highlight-code :default [_language _options text]
-  (str "<pre><code>" (mc/escape-code text) "</code></pre>"))
+(defmethod highlight-code :default [state _language _options text]
+  [state (str "<pre><code>" (mc/escape-code text) "</code></pre>")])
 
 (defn md-to-html-string
   "Wrapper around `#'markdown.core/md-to-html-string` which uses `#'highlight-code` to render code."
