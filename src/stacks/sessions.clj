@@ -31,10 +31,11 @@
   (let [p (str prompt-or-pattern)]
     ;; This pattern is a bit involved.
     ;; - Set dotall with (?s) so that . includes newlines.
+    ;; - Match any preceding ";" comment lines
     ;; - Match the prompt pattern, followed by whitespace.
     ;; - Match a bunch of text lazily, being the input form & results.
-    ;; - Use lookahead to another prompt or the end of file to anchor the end of the results.
-    (-> (format "(?s)(%s\\s*)(.*?)((?=%s)|\\Z)" p p)
+    ;; - Use lookahead to another comment, prompt or the end of file to anchor the end of the results.
+    (-> (format "(?s)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s\\s*)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
         (re-pattern))))
 
 (defn slurp-reader
@@ -55,7 +56,7 @@
   [{:keys [prompt] :or {prompt default-prompt-pattern}} buffer]
   (for [match (re-seq (make-pair-pattern prompt) buffer)
         :let  [;; Destructure the match
-               [_match _prompt text _prompt?] match
+               [_match comment? _prompt text _prompt?] match
                ;; Make a mutable reader over the matched text.
                ;;
                ;; At this point the text contains both the input form, and the printed results of
@@ -69,15 +70,16 @@
                ;; FIXME (arrdem 2017-12-10): In the case of a syntax error, the performance here is
                ;;   pretty awful because we round-trip the string through a reader to another string
                ;;   for no reason.
-               [reader form] (try [(p/parse reader) reader]
+               [reader form] (try [reader (p/parse reader)]
                                   (catch Exception e
-                                    [nil (string-reader text)]))
+                                    [(string-reader text) nil]))
                ;; Consume the rest of the text, it's the results of evaluation.
                text (slurp-reader reader)]
         ;; There may not have been output, or input. For instance if the match was just a prompt or
         ;; something else.
         :when (and form text)]
     {:tag     ::pair
+     :comment comment?
      :input   (str form)
      :results text}))
 
