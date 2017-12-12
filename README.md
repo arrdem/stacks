@@ -45,9 +45,11 @@ The namespace used may also be specified with the `:namespace` key.
 ---
 user> (+ 1 1)
 1
+;; Some comment
 user> (conj #{:foo :bar} :baz)
 #{:foo :bar :baz}
-user>
+;; That's all folks!
+user> ^d
 ```
 
 Example files can be loaded into a data structure, describing the example as a whole and each given `(input, output)` pair.
@@ -56,16 +58,18 @@ For instance, in one version of stacks the above file loaded to the data structu
 
 ```clj
 stacks.session> (parse-session (slurp "example.repl"))
-{:tag :stacks.session/session,
+{:tag     :stacks.sessions/session,
  :profile {:prompt "user>",
            :namespace user,
            :dependencies [[org.clojure/clojure "1.8.0"]]},
- :pairs ({:tag :stacks.session/pair,
-          :input "(+ 1 1)",
-          :results "1"}
-         {:tag :stacks.session/pair,
-          :input "(conj #{:foo :bar} :baz)",
-          :results "#{:foo :bar :baz}"})}
+ :pairs   ({:tag     :stacks.sessions/pair,
+            :comment nil,
+            :input   "(+ 1 1)",
+            :results "1"}
+           {:tag     :stacks.sessions/pair,
+            :comment ";; Some comment\n",
+            :input   "(conj #{:foo :bar} :baz)",
+            :results "#{:foo :bar :baz}"})}
 ```
 
 From this structure and given the namespace in which the session occurs it would be possible to use `clojure.tools.analyzer.jvm` to perform expression analysis & macroexpansion for full syntax highlighting.
