@@ -5,4 +5,5 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.reader "1.1.1"]
-                 [rewrite-clj/rewrite-clj "0.6.0"]])
+                 [rewrite-clj/rewrite-clj "0.6.0"]
+                 [markdown-clj/markdown-clj "1.0.1"]])
