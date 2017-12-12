@@ -7,7 +7,11 @@
             [markdown.common :as mc]
             [markdown.core :refer [md-to-html-string*]]))
 
-(defn read-all-string [text]
+(defn read-all-string
+  "Implementation detail of parse-options.
+
+  Use Clojure's LispReader to read a sequence of forms from a string."
+  [text]
   (loop [rdr     (clojure.lang.LineNumberingPushbackReader.
                   (java.io.StringReader. text))
          results []]
