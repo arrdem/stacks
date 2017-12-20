@@ -1,5 +1,5 @@
 # Somewhere in the Stacks
-<img align="right" src="https://github.com/arrdem/stacks/raw/master/etc/stacks.jpg"/>
+<img align="right" src="https://github.com/arrdem/stacks/raw/master/etc/stacks.jpg" width=300/>
 
 **TL;DR** A sketch at a longer-form documentation tool for Clojure.
 
