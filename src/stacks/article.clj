@@ -51,14 +51,22 @@
       [(.group matcher "heading") (parse-kramdown-attrs (.group matcher "attrs"))]
       [heading {}])))
 
+(defn maybe-parse-session
+  [{:keys [type tag] :as e}]
+  (if-not (and (= type ::code)
+               (= tag "clj/session"))
+    e
+    (update e :content sessions/parse-session)))
+
 (defn parse-code-block
   ""
   [^FencedCodeBlock block]
   (let [[tag attrs] (parse-kramdown-suffix (.getInfo block))]
-    {:type    ::code
-     :content (.getLiteral block)
-     :tag     tag
-     :attrs   attrs}))
+    (-> {:type    ::code
+         :content (.getLiteral block)
+         :tag     tag
+         :attrs   attrs}
+        maybe-parse-session)))
 
 (defn munge-heading
   "Munge a heading to an ID"
@@ -119,11 +127,11 @@
 (defn collect-labels
   ""
   [tree]
-  (let [acc (volatile! {})]
+  (let [acc (volatile! #{})]
     (postwalk-hiccup
-     (fn [[tag attrs rest :as %]]
-       (when (#{:h1 :h2 :h3 :h4 :h5 :h6} tag)
-         (vswap! acc assoc (:id attrs) rest))
+     (fn [[tag attrs :as %]]
+       (when (:id attrs)
+         (vswap! acc conj (:id attrs)))
        %)
      tree)
     @acc))
@@ -131,11 +139,11 @@
 (defn collect-references
   ""
   [tree]
-  (let [acc (volatile! {})]
+  (let [acc (volatile! #{})]
     (postwalk-hiccup
-     (fn [[tag attrs rest :as %]]
+     (fn [[tag attrs :as %]]
        (when (#{:a} tag)
-         (vswap! acc assoc (:href attrs) rest))
+         (vswap! acc conj (:href attrs)))
        %)
      tree)
     @acc))
@@ -168,4 +176,3 @@
         (throw
          (IllegalArgumentException.
           "Don't know what I got but couldn't convert it to a buffer for parsing!"))))))
-
