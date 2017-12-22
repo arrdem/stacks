@@ -1,32 +1,42 @@
 (ns stacks.article
-  "A thin wrapper around markdown-clj which adds extensions for writing stacks articles."
+  "A thin wrapper around common mark which adds extensions for writing stacks articles."
   {:authors ["Reid McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.string :as string]
             [clojure.walk :as walk]
-            [commonmark-hiccup.core :as mark]
-            [clojure.java.io :as io])
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [stacks.sessions :as sessions]
+            [commonmark-hiccup.core :as mark])
   (:import [org.commonmark.node
             ,,FencedCodeBlock
             ,,Heading]))
 
 (def kramdown-heading-pattern
-  #"(?<heading>[^\{\}]*?)(\s*\{(?<attrs>[^\}]*)\})?$")
+  ""
+  #"(?<heading>[^\{\}]*?)(\s*\{(?<attrs>.+)\})?\s*$")
+
+(def kramdown-attr-pattern
+  (re-pattern
+   (string/join "|"
+                [#"(?<id>#[\S&&[^\}]]+)"
+                 #"(?<class>\.[\S&&[^\}]]+)"
+                 #"(?<kv>(?<k>[\S&&[^\}=]]+)=(?<v>([\S&&[^\}\"]]+)|(\"([^\"]|\\\")*?\")))"])))
 
 (defn parse-kramdown-attrs
+  ""
   [text]
   (if-not text
     {}
-    (->> (string/split text #"\s+")
-         (map (fn [s]
-                (cond (.startsWith s "#")
-                      [:id (.replaceFirst s "#" "")]
-
-                      (.startsWith s ".")
-                      [:class (.replaceFirst s "." "")]
-
-                      (.contains s "=")
-                      (vec (string/split s #"=" 2)))))
+    (->> text
+         (re-seq kramdown-attr-pattern)
+         (map (fn [[match id class kv k v unquoted-v quoted-v]]
+                (let [;; FIXME (arrdem 2017-12-22):
+                      ;;   Really I just need a thing to process escaped strings, but EDN works
+                      v (or unquoted-v (edn/read-string quoted-v))]
+                  (cond id    [:id (.replaceFirst id "#" "")]
+                        class [:class (.replaceFirst class "." "")]
+                        kv    [(keyword k) v]))))
          (reduce (fn [acc [k v]]
                    (case k
                      (:class) (update acc k (fnil conj []) v)
@@ -66,7 +76,9 @@
             attrs)
      heading]))
 
-(defn deep-merge [v & vs]
+(defn deep-merge
+  ""
+  [v & vs]
   (letfn [(rec-merge [v1 v2]
             (if (and (map? v1) (map? v2))
               (merge-with deep-merge v1 v2)
@@ -75,25 +87,38 @@
       (reduce #(rec-merge %1 %2) v vs))))
 
 (def markdown-config
-  ""
+  "An extended Markdown processor.
+
+  Adds support for my fenced code block notation and my labeled headings."
   (deep-merge mark/default-config
               {:renderer {:nodes {FencedCodeBlock parse-code-block
                                   Heading         parse-heading}}}))
 
 (defn hiccup-tag?
+  ""
   [o]
   (and (vector? o)
        (keyword? (first o))))
 
-(defn prewalk-hiccup
-  [f tree]
-  (walk/prewalk #(if (hiccup-tag? %) (f %) %) tree))
+(defn tagged-union?
+  ""
+  [o]
+  (and (map? o)
+       (:type o)))
 
 (defn postwalk-hiccup
+  ""
   [f tree]
   (walk/postwalk #(if (hiccup-tag? %) (f %) %) tree))
 
-(defn collect-labels [tree]
+(defn postwalk-tagged
+  ""
+  [f tree]
+  (walk/postwalk #(if (tagged-union? %) (f %) %) tree))
+
+(defn collect-labels
+  ""
+  [tree]
   (let [acc (volatile! {})]
     (postwalk-hiccup
      (fn [[tag attrs rest :as %]]
@@ -103,7 +128,9 @@
      tree)
     @acc))
 
-(defn collect-references [tree]
+(defn collect-references
+  ""
+  [tree]
   (let [acc (volatile! {})]
     (postwalk-hiccup
      (fn [[tag attrs rest :as %]]
@@ -127,11 +154,17 @@
   ""
   [resource-file-or-buffer]
   (if (instance? java.io.File resource-file-or-buffer)
-    (reader->article (.toURL ^java.io.File resource-file-or-buffer) (slurp resource-file-or-buffer))
+    (buffer->article (.toURL ^java.io.File resource-file-or-buffer)
+                     (slurp resource-file-or-buffer))
+
     (if-let [r (io/resource resource-file-or-buffer)]
-      (reader->article (.toURL r) (slurp r))
+      (buffer->article (.toURL r)
+                       (slurp r))
+      
       (if (string? resource-file-or-buffer)
-        (reader->article (str "NO SOURCE AVAILABLE") (java.io.StringReader. resource-file-or-buffer))
+        (buffer->article (str "NO SOURCE AVAILABLE")
+                         (java.io.StringReader. resource-file-or-buffer))
+
         (throw
          (IllegalArgumentException.
           "Don't know what I got but couldn't convert it to a buffer for parsing!"))))))
