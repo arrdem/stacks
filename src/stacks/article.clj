@@ -171,8 +171,8 @@
       
       (if (string? resource-file-or-buffer)
         (buffer->article (str "NO SOURCE AVAILABLE")
-                         (java.io.StringReader. resource-file-or-buffer))
-
+                         resource-file-or-buffer)
+        
         (throw
          (IllegalArgumentException.
           "Don't know what I got but couldn't convert it to a buffer for parsing!"))))))

@@ -54,6 +54,8 @@ user> ^d
 
 Example files can be loaded into a data structure, describing the example as a whole and each given `(input, output)` pair.
 
+### Demo: Session parsing
+
 For instance, in one version of stacks the above file loaded to the data structure
 
 ```clj
@@ -74,17 +76,6 @@ stacks.session> (parse-session (slurp "example.repl"))
 
 From this structure and given the namespace in which the session occurs it would be possible to use `clojure.tools.analyzer.jvm` to perform expression analysis & macroexpansion for full syntax highlighting.
 There are some challenges there because of how tools.analyzer treats inlinable expressions, but using tools.analyzer would allow for much fuller syntax highlighting and the automatic cross-linking of forms with their documentation.
-
-## Notation
-
-There are unfortunately many variations of Markdown.
-However, this also means that it's widely available and relatively widely understood.
-For all its flaws, it's the most convenient baseline notation to work from.
-There simply isn't a broad enough understanding of or support for other notations such as reStructuredText outside of their particular niches.
-
-[var-link](https://github.com/clojure-grimoire/var-link) isn't the notation you want, it's too verbose but it's the right concept.
-I propose that the URI patterns `def:name`, `def:namespace/name`, `namespace:name`, `topic:name`, `class:classname`, `javadoc:classname`, `javadoc:classname/methodname` and such are sufficiently terse to be author friendly, unobtrusive in source code and trivial to write transformers for when performing internal linking of documentation.
-Furthermore, the URI syntax is already legal and expected to be well-behaved nested within Markdown as the target of links and images.
 
 ## Articles
 
@@ -116,11 +107,43 @@ This could also be used to build up literate programming features, where code bl
     6
     ```
 
-This could even be combined with the REPL features from above.
+This could even be combined with the REPL features from above, to produce a form of documentation as data.
+
+Once documentation is in a rich data form, applying syntax highlighting and IDE-like code analysis becomes quite tractable.
+
+Furthermore, the documentation itself becomes somewhat decoupled from its final rendering.
+
+### Demo: Article parsing
+
+```clj
+stacks.article> (markdown->article (io/file "article.md"))
+{:type :stacks.article/article,
+ :source #object[java.net.URL "0x1dcdf0b1" "file:/home/arrdem/doc/dat/git/arrdem/stacks/article.md"],
+ :labels #{"foo" "ex1" "ex2"},
+ :references #{"foo"},
+ :content ([:h1 {:id "foo"} "Foo the bar baz qux"]
+           [:p {} "bar baz qux"]
+           {:type :stacks.article/code,
+            :tag "clj",
+            :attrs {:id "ex1", :class ["bar" "baz" "qux" "clj-code"]},
+            :content "(+ 1 2)\n"}
+           {:type :stacks.article/code,
+            :tag "clj/session",
+            :attrs {:id "ex2"}
+            :content {:tag :stacks.sessions/session,
+                      :profile {:prompt "^[^>]*?>\\s+",
+                                :namespace user,
+                                :dependencies [[org.clojure/clojure "1.9.0"]]},
+                      :pairs ({:tag :stacks.sessions/pair,
+                               :comment nil,
+                               :input "(+ 1 2)",
+                               :results "3"})}}
+           [:p {} [:a {:href "foo"} "a"]])}
+stacks.article> 
+```
 
 ## License
 
 Copyright © 2017 Reid "arrdem" McKenzie
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
