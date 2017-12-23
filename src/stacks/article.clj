@@ -224,7 +224,8 @@
 
       (let [f (io/file resource-file-or-buffer)]
         (when (.exists f)
-          (recur f)))
+          ;; Can't recur from here >.>
+          (markdown->article f)))
 
       (if-let [r (io/resource resource-file-or-buffer)]
         (buffer->article (.toURL r)
