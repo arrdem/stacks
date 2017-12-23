@@ -200,7 +200,13 @@
     @acc))
 
 (defn- buffer->article
-  ""
+  "Takes a location and a buffer read from that location. Produces an `::article`.
+
+  Articles are tagged unions, having `:source` being where the source
+  used to compute the structure came from, `:labels` being the set of
+  labels created in this article, `:references` being the set of
+  labels / link targets used in this article and `:content` being a
+  tree of Hiccup vectors and tagged unions representing the article."
   [source-loc buffer]
   (let [content (mark/markdown->hiccup markdown-config buffer)]
     {:type       ::article
@@ -210,20 +216,24 @@
      :content    content}))
 
 (defn markdown->article
-  ""
+  "Takes a file path, resource path, File instance or raw buffer and parses it to an `::article`."
   [resource-file-or-buffer]
-  (if (instance? java.io.File resource-file-or-buffer)
-    (buffer->article (.toURL ^java.io.File resource-file-or-buffer)
-                     (slurp resource-file-or-buffer))
+  (or (when (instance? java.io.File resource-file-or-buffer)
+        (buffer->article (.toURL ^java.io.File resource-file-or-buffer)
+                         (slurp resource-file-or-buffer)))
 
-    (if-let [r (io/resource resource-file-or-buffer)]
-      (buffer->article (.toURL r)
-                       (slurp r))
+      (let [f (io/file resource-file-or-buffer)]
+        (when (.exists f)
+          (recur f)))
+
+      (if-let [r (io/resource resource-file-or-buffer)]
+        (buffer->article (.toURL r)
+                         (slurp r)))
       
-      (if (string? resource-file-or-buffer)
+      (when (string? resource-file-or-buffer)
         (buffer->article (str "NO SOURCE AVAILABLE")
-                         resource-file-or-buffer)
-        
-        (throw
-         (IllegalArgumentException.
-          "Don't know what I got but couldn't convert it to a buffer for parsing!"))))))
+                         resource-file-or-buffer))
+      
+      (throw
+       (IllegalArgumentException.
+        "Don't know what I got but couldn't convert it to a buffer for parsing!"))))
