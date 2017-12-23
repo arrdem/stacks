@@ -24,7 +24,12 @@
                  #"(?<kv>(?<k>[\S&&[^\}=]]+)=(?<v>([\S&&[^\}\"]]+)|(\"([^\"]|\\\")*?\")))"])))
 
 (defn parse-kramdown-attrs
-  ""
+  "Parses the contents of a Kramdown style {} trailing form on a heading or code block tag.
+
+  {} forms are whitespace delimited lists of `#foo` forms which set
+  the ID of the decorated heading, `.foo` forms which add a class to
+  the decorated heading, and `key=val` pairs where `val` may be a
+  double quoted string containing whitespace."
   [text]
   (if-not text
     {}
@@ -44,7 +49,13 @@
                  {}))))
 
 (defn parse-kramdown-suffix
-  "https://kramdown.gettalong.org/syntax.html#specifying-a-header-id"
+  "Tries to parse a Kramdown [1] style heading suffix.
+
+  Returns a pair `[heading, attrs]` where `heading` is a string of the
+  un-parsed text, and `attrs` is a possibly empty map of keys and
+  values specified in the suffix if any.
+
+  [1] https://kramdown.gettalong.org/syntax.html#specifying-a-header-id"
   [heading]
   (let [matcher (re-matcher kramdown-heading-pattern heading)]
     (if (.matches matcher)
@@ -52,6 +63,14 @@
       [heading {}])))
 
 (defn maybe-parse-session
+  "`::code` structure transformer.
+
+  If the `::code` structure is tagged `clj/session`, uses the
+  `sessions` library to parse the session into a datastructure,
+  returning an updated `::code` record containing the parsed session
+  as its `:content`.
+
+  If the tags didn't match, returns the argument `::code` record."
   [{:keys [type tag] :as e}]
   (if-not (and (= type ::code)
                (= tag "clj/session"))
@@ -59,7 +78,24 @@
     (update e :content sessions/parse-session)))
 
 (defn parse-code-block
-  ""
+  "Takes a FencedCodeBlock instance, and returns a `::code` tagged structure with the contents.
+
+  Interprets the first line of the block as \"info\", consisting of
+  the name of the language (or formatter) to use on the block followed
+  by optional Kramdown [1] attributes.
+
+  Attempts to parse a couple known document formats to data
+  structures, but by default returns a structure of the form
+
+  ```
+  {:type     ::code
+   :contennt String ; raw content
+   :tag      String ; tag less any Kramdown attributes.
+   :attrs    Map    ; parsed Kramdown attributes.
+  }
+  ```
+
+  [1] https://kramdown.gettalong.org/syntax.html#specifying-a-header-id"
   [^FencedCodeBlock block]
   (let [[tag attrs] (parse-kramdown-suffix (.getInfo block))]
     (-> {:type    ::code
@@ -69,14 +105,15 @@
         maybe-parse-session)))
 
 (defn munge-heading
-  "Munge a heading to an ID"
+  "Munge a heading (h1 h2 etc.) to a string that could be used as an ID."
   [^String heading]
   (-> heading
       (.toLowerCase)
       (.replaceAll "\\s" "-")))
 
 (defn parse-heading
-  ""
+  "Takes a Heading instance, and returns an appropriate Hiccup `:h`
+  structure, adding a computed `:id` based on the heading's name."
   [^Heading h]
   (let [[heading attrs] (parse-kramdown-suffix (mark/text-content h))]
     [(keyword (str "h" (.getLevel h)))
@@ -84,7 +121,7 @@
             attrs)
      heading]))
 
-(defn deep-merge
+(defn- deep-merge
   ""
   [v & vs]
   (letfn [(rec-merge [v1 v2]
@@ -103,29 +140,43 @@
                                   Heading         parse-heading}}}))
 
 (defn hiccup-tag?
-  ""
+  "Predicate.
+
+  Matches Hiccup style vectors of keywords and bodies."
   [o]
   (and (vector? o)
        (keyword? (first o))))
 
 (defn tagged-union?
-  ""
+  "Predicate.
+
+  Matches maps with the `:type` keyword in the tagged union style."
   [o]
   (and (map? o)
        (:type o)))
 
 (defn postwalk-hiccup
-  ""
+  "Transformer.
+
+  Walks a tree of Hiccup and other structures in deepest-first order,
+  applying the given transformer to any `hiccup?` substructures.
+
+  Returns the transformed tree."
   [f tree]
   (walk/postwalk #(if (hiccup-tag? %) (f %) %) tree))
 
 (defn postwalk-tagged
-  ""
+  "Transformer.
+
+  Walks a tree of Hiccup and other structures in deepest-first order,
+  applying the given transformer to any `tagged-union?` substructures.
+
+  Returns the transformed tree."
   [f tree]
   (walk/postwalk #(if (tagged-union? %) (f %) %) tree))
 
 (defn collect-labels
-  ""
+  "Collects the set of all `:id`s specified in a Hiccup tree."
   [tree]
   (let [acc (volatile! #{})]
     (postwalk-hiccup
@@ -137,7 +188,7 @@
     @acc))
 
 (defn collect-references
-  ""
+  "Collects the set of all `:href` targets specified in a Hiccup tree."
   [tree]
   (let [acc (volatile! #{})]
     (postwalk-hiccup
