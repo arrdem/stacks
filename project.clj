@@ -6,6 +6,8 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.reader "1.1.1"]
+                 [org.clojure/tools.namespace "0.2.11"]
+                 [org.clojure/tools.analyzer.jvm "0.7.0"]
                  [rewrite-clj/rewrite-clj "0.6.0"]
                  [me.arrdem/commonmark-hiccup "LATEST"]
                  [me.arrdem/detritus "LATEST"]]
