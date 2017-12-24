@@ -117,13 +117,13 @@ Something like this...
     ```
 
 ```clj
-stacks.article> (markdown->article (io/file "example.md"))
-{:type :stacks.article/article,
+stacks.articles> (markdown->article (io/file "example.md"))
+{:type :stacks.articles/article,
  :source #object[java.net.URL "0x5451e4aa" "file:/home/arrdem/doc/dat/git/arrdem/stacks/example.md"],
  :labels #{"primordial" "ex1" "ex2"},
  :references #{},
  :content ([:h1 {:id "primordial"} "Primordial Clojure"]
-           {:type :stacks.article/code,
+           {:type :stacks.articles/code,
             :tag "clj/session",
             :attrs {:id "ex1"}
             :content {:tag :stacks.sessions/session,
@@ -137,7 +137,7 @@ stacks.article> (markdown->article (io/file "example.md"))
            [:p {}
             "Some continued text in the middle of the example,"
             " and now we want to continue the same session with another example"]
-           {:type :stacks.article/code,
+           {:type :stacks.articles/code,
             :tag "clj/session",
             :attrs {:id "ex2"}
             :content {:tag :stacks.sessions/session,
@@ -149,7 +149,7 @@ stacks.article> (markdown->article (io/file "example.md"))
                                :comment nil,
                                :input "(+ foo 3)",
                                :results "6"})}})}
-stacks.article> 
+stacks.articles> 
 ```
 
 ## License

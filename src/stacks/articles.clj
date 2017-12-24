@@ -1,4 +1,4 @@
-(ns stacks.article
+(ns stacks.articles
   "A thin wrapper around common mark which adds extensions for writing stacks articles."
   {:authors ["Reid McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
@@ -7,6 +7,7 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [stacks.sessions :as sessions]
+            [detritus.update :refer [deep-merge]]
             [commonmark-hiccup.core :as mark])
   (:import [org.commonmark.node
             ,,FencedCodeBlock
@@ -17,6 +18,7 @@
   #"(?<heading>[^\{\}]*?)(\s*\{(?<attrs>.+)\})?\s*$")
 
 (def kramdown-attr-pattern
+  ""
   (re-pattern
    (string/join "|"
                 [#"(?<id>#[\S&&[^\}]]+)"
@@ -106,7 +108,7 @@
 
 (defn munge-heading
   "Munge a heading (h1 h2 etc.) to a string that could be used as an ID."
-  [^String heading]
+  [^String heading] 
   (-> heading
       (.toLowerCase)
       (.replaceAll "\\s" "-")))
@@ -120,16 +122,6 @@
      (merge {:id (munge-heading heading)}
             attrs)
      heading]))
-
-(defn- deep-merge
-  ""
-  [v & vs]
-  (letfn [(rec-merge [v1 v2]
-            (if (and (map? v1) (map? v2))
-              (merge-with deep-merge v1 v2)
-              v2))]
-    (when (some identity vs)
-      (reduce #(rec-merge %1 %2) v vs))))
 
 (def markdown-config
   "An extended Markdown processor.
