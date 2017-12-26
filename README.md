@@ -177,7 +177,10 @@ stacks.doctree> *options
  :ignored-patterns #{#"checkouts"},
  :type :stacks.doctree/options}
 stacks.doctree> (def *project
-                  {:source-paths ["src/" "test/"], :doc-paths ["."]})
+                  "A leiningen style project map with source paths,
+                   also accepts doc paths and session paths."
+                  {:source-paths ["src/" "test/"],
+                   :doc-paths ["."]})
 #'stacks.doctree/*project
 stacks.doctree> (def *files
                   (find-files *options *project))
