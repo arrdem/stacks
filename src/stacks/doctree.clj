@@ -1,15 +1,17 @@
 (ns stacks.doctree
   "Trees of sources and docs.
-  
+
   Articles don't come alone.
   They're the most useful when they come in groups.
   Documentation engines need to work in terms of large filesets of documentation and sources."
   (:require [clojure.java.io :as io]
             [clojure.java.classpath :refer [classpath urls]]
             [stacks.articles :as articles]
+            [stacks.tools.namespace :refer [parse-ns-form]]
+            [stacks.tools.reader :refer [read-file-ns-form]]
             [detritus :refer [zip]]
             [detritus.types :refer [pattern? uri? file?]]
-            [detritus.update :refer [map-vals]]
+            [detritus.update :refer [map-vals take-when]]
             [clojure.string :as string])
   (:import [java.io File]
            [java.net URI]))
@@ -65,7 +67,7 @@
     (or (get @cache path)
         (let [r (when (.exists path)
                   (cons path
-                        (if (.isDirectory path) 
+                        (if (.isDirectory path)
                           (mapcat (fn [^File entry]
                                     (if (.isDirectory entry)
                                       (find-path options cache entry)
@@ -90,7 +92,7 @@
         paths           (mapcat project path-ks)]
     {result-k (->> paths
                    (map #(if-not (file? %) (io/file %) %))
-                   (mapcat (partial find-path options cache)) 
+                   (mapcat (partial find-path options cache))
                    (keep (fn [^File f]
                            (let [uri      ^URI (.toURI f)
                                  uri-text (.toString uri)]
@@ -126,13 +128,29 @@
 
 ;; FIXME (arrdem 2017-12-23):
 ;;   Ran out of time on the flight.
-(declare index-sources index-docs index-sessions)
+(declare index-docs index-sessions)
+
+(defn index-sources [options project project-files]
+  (let [{:keys [platform]
+         :or   {platform 'clj}} project
+        {:keys [sources]}       project-files]
+    (map (fn [url]
+           {:type      ::file
+            :namespace (if-let [form (read-file-ns-form url)]
+                         (if (= (first form) 'in-ns)
+                           ;; FIXME (arrdem 2017-12-25):
+                           ;;   What kind of ns structure to generate in this case?
+                           (second form)
+                           (parse-ns-form form)))
+            :url       url})
+         sources)))
 
 (defn index-project
   "Given Options, a Leiningen project and the files comprising that
   project analyzes & indexes them for rendering."
   [options project project-files]
-  (merge (index-sources options project project-files)
+  (merge {:type ::index}
+         (index-sources options project project-files)
          (index-docs options project project-files)
          (index-sessions options project project-files)))
 
