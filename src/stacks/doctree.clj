@@ -142,6 +142,19 @@
                            ;;   What kind of ns structure to generate in this case?
                            (second form)
                            (parse-ns-form form)))
+            ;; FIXME (arrdem 2017-12-25):
+            ;;   I really want to index the contents of a namespace too. This means doing code
+            ;;   loading because that's the only way to actually extract docstrings. Code loading
+            ;;   has to happen both in a sandbox and in a subprocess because of potential dependnecy
+            ;;   conflicts between whatever process is doing the indexing and the target.
+            ;;
+            ;;   Booting JVMs is freaking slow. Maybe we don't care, and maybe it's acceptable for
+            ;;   stacks to sit in-process as a REPL sidecar of some description. But being able to
+            ;;   do well constrained code loading in a sandbox for generating static docs is
+            ;;   desirable.
+            ;;
+            ;; Prior art: Boot pods
+            ;;   https://github.com/boot-clj/boot/wiki/Pods
             :url       url})
          sources)))
 
