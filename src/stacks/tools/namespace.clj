@@ -136,11 +136,12 @@
 (defn parse-ns-form [form]
   (let [[_ns_sym form]    (take-when #(= 'ns %) nil form)
         [ns-name form]    (take-when symbol? nil form)
+        ns-name           (with-meta ns-name {})
         symbol-meta       (meta ns-name)
         [docstring? form] (take-when string? nil form)
         [more-meta? form] (take-when map? nil form)
         ns-meta           (merge {}
-                                 (with-meta symbol-meta nil)
+                                 symbol-meta
                                  (when docstring? {:doc docstring?})
                                  (when more-meta? more-meta?))]
     (as->  {:tag ::namespace :name ns-name :metadata ns-meta} %
