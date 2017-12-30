@@ -2,7 +2,11 @@
   "Tools for extracting Clojure documentation from docstrings."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
-  (:require [stacks.tools.reader :refer [read-source]]))
+  (:refer-clojure :exclude [name namespace])
+  (:require [clojure.java.javadoc :as javadoc]
+            [stacks.tools.reader :refer [read-source]]
+            [detritus :refer [name namespace]]
+            [clojure.string :as str]))
 
 (defn source-fn
   "Adapted from `#'clojure.repl/source-fn`. Returns a string of the
@@ -52,6 +56,7 @@
   Builds & returns a documentation record."
   [thing meta]
   {:type ::docstring
+
    :obj  thing
    :text (:doc meta)
    :meta (dissoc meta :doc)})
@@ -59,28 +64,38 @@
 (defprotocol
     ^{:doc "A protocol providing open dispatch for fetching documentation & metadata"}
     Documentable
-  (doc [this]
+  (doc
+    [this]
+    [this options]
     "Try to return a `::docstring` structure describing the given object.
 
 If no documentation can be found, returns `nil`.
 Part of the `Documentable` abstraction."))
 
-(meta Documentable)
+;; lol @ wallhack
+(alter-meta! #'javadoc/javadoc-url)
+
+(def default-options
+  {})
 
 (extend-protocol Documentable
+  Object
+  (doc [o]
+    (doc o default-options))
+
   nil
-  (doc [_] nil)
+  (doc [_ options] nil)
 
   clojure.lang.Namespace
   (doc [ns]
     (->doc ns (meta ns)))
 
   clojure.lang.Var
-  (doc [var]
+  (doc [var options]
     (->doc var (meta var)))
 
   clojure.lang.Symbol
-  (doc [sym]
+  (doc [sym options]
     (cond (and (namespace sym)
                (name sym))
           (or (doc (clojure.lang.Var/find sym))
@@ -96,4 +111,9 @@ Part of the `Documentable` abstraction."))
 
           :else
           {:type :error
-           :msg  "Unable to resolve `nil` symbol."})))
+           :msg  "Unable to resolve `nil` symbol."}))
+
+  java.lang.Class
+  (doc [cls options]
+    (let [cls-full-name (.getName ^Class cls)
+          global-])))

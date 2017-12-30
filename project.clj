@@ -4,13 +4,16 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :source-paths   ["src/main/clj"
-                   "src/main/cljc"]
-  :resource-paths ["src/main/resources"]
+  :source-paths      ["src/main/clj"
+                      "src/main/cljc"]
+  :java-source-paths ["src/main/jvm"]
+  :resource-paths    ["src/main/resources"]
 
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [me.arrdem/commonmark-hiccup "0.1.1"]
-                 [me.arrdem/detritus "0.3.1.4"]]
+                 [me.arrdem/detritus "0.3.1.4"]
+                 ;; FIXME: this is for parsing javadoc, can we do it some other way?
+                 [enlive "1.1.6"]]
 
   :profiles
   {:test {:test-paths     ["src/test/clj"
