@@ -62,6 +62,10 @@
                ;;   for no reason.
                [reader form] (try [reader (read-source reader)]
                                   (catch Exception e
+                                    ;; Return a new Reader and pretend we didn't see anything.
+                                    ;;
+                                    ;; FIXME (arrdem 2017-12-29):
+                                    ;;   Is there a good way to enable users to capture this event?
                                     [(StringReader. text) nil]))
                ;; Consume the rest of the text, it's the results of evaluation.
                text (slurp reader)]
