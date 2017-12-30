@@ -4,6 +4,8 @@
   Articles don't come alone.
   They're the most useful when they come in groups.
   Documentation engines need to work in terms of large filesets of documentation and sources."
+  {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
+   :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.java.io :as io]
             [clojure.java.classpath :refer [classpath urls]]
             [stacks.articles :as articles]
@@ -172,7 +174,7 @@
 
   Accepts a Leiningen style project, having `:source-paths`,
   `:java-source-paths`, `:resource-paths`, and `:doc-paths`. Emulates
-  a classpath, indexing all "
+  a classpath, indexing all"
   [options project]
   (let [options       (normalize-options options)
         project-files (find-files options project)]

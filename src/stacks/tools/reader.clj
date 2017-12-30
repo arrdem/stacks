@@ -1,5 +1,7 @@
 (ns stacks.tools.reader
   "Helpers for working with readers and reading files."
+  {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
+   :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.java.io :as io]))
 
 (defn read-clj
@@ -18,7 +20,7 @@
     (loop []
       (let [form (doto (read-clj rdr) str)]
         (if (try (pred form)
-                 (catch Exception e false)) 
+                 (catch Exception e false))
           form
           (recur))))
     (catch Exception e nil)))

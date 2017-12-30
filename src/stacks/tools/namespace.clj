@@ -1,5 +1,7 @@
 (ns stacks.tools.namespace
   "A completely nutty exercise in mapping the ns form to a datastructure."
+  {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
+   :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [detritus.update :refer [map-vals take-when group-by-p]]))
 
 (defn- libspec?
@@ -18,7 +20,7 @@
     (cons x coll)
     (concat x coll)))
 
-(def ^:dynamic *require-options*
+(def ^:dynamic *loading-options*
   [:exclude :only :rename :refer :reload :reload-all :verbose :use])
 
 (defn parse-require*
@@ -60,7 +62,7 @@
   {:type       s-or
    :namespace  s-or
    :as         s-union
-   :refer      s-union 
+   :refer      s-union
    :exclude    s-union
    :only       s-union
    :rename     (s* (fn [x y] (merge-with #(into %1 %2) x y)))
@@ -102,7 +104,7 @@
 (def class-pattern
   #"(?<module>[_a-z\.$]+)\.(?<class>[A-Z][a-zA-Z_\.]*)")
 
-(defn add-import [ns-record import-name] 
+(defn add-import [ns-record import-name]
   (let [full-class           (name import-name)
         [match module class] (re-find class-pattern full-class)]
     (assoc-in ns-record [:imports (symbol class)] import-name)))

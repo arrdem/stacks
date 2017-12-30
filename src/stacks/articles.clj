@@ -1,6 +1,6 @@
 (ns stacks.articles
   "A thin wrapper around common mark which adds extensions for writing stacks articles."
-  {:authors ["Reid McKenzie <me@arrdem.com>"]
+  {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.string :as string]
             [clojure.walk :as walk]
@@ -108,7 +108,7 @@
 
 (defn munge-heading
   "Munge a heading (h1 h2 etc.) to a string that could be used as an ID."
-  [^String heading] 
+  [^String heading]
   (-> heading
       (.toLowerCase)
       (.replaceAll "\\s" "-")))
@@ -222,11 +222,11 @@
       (if-let [r (io/resource resource-file-or-buffer)]
         (buffer->article (.toURL r)
                          (slurp r)))
-      
+
       (when (string? resource-file-or-buffer)
         (buffer->article (str "NO SOURCE AVAILABLE")
                          resource-file-or-buffer))
-      
+
       (throw
        (IllegalArgumentException.
         "Don't know what I got but couldn't convert it to a buffer for parsing!"))))
