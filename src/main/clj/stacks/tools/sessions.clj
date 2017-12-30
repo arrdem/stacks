@@ -1,4 +1,4 @@
-(ns stacks.sessions
+(ns stacks.tools.sessions
   "Tools for parsing REPL style sessions into data structures."
   {:authors ["Reid McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}

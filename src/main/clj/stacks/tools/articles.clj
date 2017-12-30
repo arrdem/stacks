@@ -1,4 +1,4 @@
-(ns stacks.articles
+(ns stacks.tools.articles
   "A thin wrapper around common mark which adds extensions for writing stacks articles."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}

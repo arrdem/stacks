@@ -1,5 +1,5 @@
-(ns stacks.sessions-test
-  (:require [stacks.sessions :as s]
+(ns stacks.tools.sessions-test
+  (:require [stacks.tools.sessions :as s]
             [clojure.test :as t]
             [clojure.java.io :as io]))
 
