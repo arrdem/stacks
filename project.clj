@@ -18,11 +18,11 @@
                  ;; For the server, can this be a different artifact?
                  [ring/ring-core "1.6.3"]
                  [ring/ring-jetty-adapter "1.6.3"]
-                 [selmer "1.11.3"]
+                 #_[selmer "1.11.3"
+                    :exclude [hiccups]]
                  [compojure "1.6.0"]
                  [hiccup "1.0.5"]
                  [cheshire "5.8.0"]
-                 [instaparse "1.4.8"] ;; FIXME: what needs this and why?
                  ]
 
   :plugins [[me.arrdem/lein-git-version "LATEST"]]
