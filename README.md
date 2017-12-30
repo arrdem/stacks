@@ -35,7 +35,7 @@ For instance, the `:prompt` keyword may be a string or pattern identifying the R
 Dependencies used in the REPL session may be specified with a Leiningen style `:dependencies` vector.
 The namespace used may also be specified with the `:namespace` key.
 
-[**example.repl**](example.repl):
+[**example.repl**](src/test/resources/example.repl):
 ```
 ---
 {:namespace    user
@@ -91,7 +91,7 @@ Something like this...
 
 ### Demo: Article parsing
 
-[example.md](example.md)
+[**example.md**](src/test/resources/example.md)
 
     # Primordial Clojure {#primordial}
 
