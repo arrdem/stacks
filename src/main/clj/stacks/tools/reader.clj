@@ -32,3 +32,19 @@
   [file]
   (with-open [rdr (java.io.PushbackReader. (io/reader file))]
     (reading-find-form (comp #{'ns 'in-ns} first) rdr)))
+
+(defn read-source
+  "Read a form from a reader, returning the text for the form read NOT the value of the form read."
+  [^java.io.Reader rdr]
+  (let [buffer (StringBuilder.)
+        pbr    (proxy [java.io.PushbackReader] [rdr]
+                 (read []
+                   (let [i (proxy-super read)]
+                     (.append buffer (char i))
+                     i)))]
+    (if (= :unknown *read-eval*)
+      (throw
+       (IllegalStateException.
+        "Unable to read source while `clojure.core/*read-eval*` is `:unknown`."))
+      (read pbr))
+    (.toString buffer)))

@@ -6,7 +6,7 @@
             [clojure.walk :as walk]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [stacks.sessions :as sessions]
+            [stacks.tools.sessions :as sessions]
             [detritus.update :refer [deep-merge]]
             [commonmark-hiccup.core :as mark])
   (:import [org.commonmark.node
@@ -28,7 +28,7 @@
 (defn parse-kramdown-attrs
   "Parses the contents of a Kramdown style {} trailing form on a heading or code block tag.
 
-  {} forms are whitespace delimited lists of `#foo` forms which set
+  `{}` forms are whitespace delimited lists of `#foo` forms which set
   the ID of the decorated heading, `.foo` forms which add a class to
   the decorated heading, and `key=val` pairs where `val` may be a
   double quoted string containing whitespace."

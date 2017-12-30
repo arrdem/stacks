@@ -3,10 +3,10 @@
   {:authors ["Reid McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.java.io :as io]
-            [clojure.tools.reader.reader-types :refer [read-char]]
-            [rewrite-clj.parser :as p]
-            [rewrite-clj.reader :refer [string-reader]])
-  (:import java.io.Reader))
+            [stacks.tools.reader :refer [read-source]])
+  (:import [java.io
+            ,,Reader
+            ,,StringReader]))
 
 (def header-regex
   "Pattern used to match a YAML-style document header"
@@ -38,16 +38,6 @@
     (-> (format "(?s)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s\\s*)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
         (re-pattern))))
 
-(defn slurp-reader
-  "Consumes all available input from a tools.reader reader, returning a string thereof."
-  [rdr]
-  (loop [buff (java.lang.StringBuilder.)]
-    (let [c (read-char rdr)]
-      (if c
-        (do (.append buff c)
-            (recur buff))
-        (.trim (.toString buff))))))
-
 (defn parse-pairs
   "Parses the sequence of input/output pairs from the session's body.
 
@@ -61,7 +51,7 @@
                ;;
                ;; At this point the text contains both the input form, and the printed results of
                ;; evaluation.
-               reader (string-reader text)
+               reader (StringReader. text)
                ;; Use rewrite-clj too parse the first form. This is the input form.
                ;;
                ;; Unfortunately there may be syntax errors. Deal with this by producing a pair
@@ -70,11 +60,11 @@
                ;; FIXME (arrdem 2017-12-10): In the case of a syntax error, the performance here is
                ;;   pretty awful because we round-trip the string through a reader to another string
                ;;   for no reason.
-               [reader form] (try [reader (p/parse reader)]
+               [reader form] (try [reader (read-source reader)]
                                   (catch Exception e
-                                    [(string-reader text) nil]))
+                                    [(StringReader. text) nil]))
                ;; Consume the rest of the text, it's the results of evaluation.
-               text (slurp-reader reader)]
+               text (slurp reader)]
         ;; There may not have been output, or input. For instance if the match was just a prompt or
         ;; something else.
         :when (and form text)]

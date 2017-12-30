@@ -5,7 +5,7 @@
 
 (t/deftest parser-test
   (t/testing "Testing the root example"
-    (t/is (s/parse-session (slurp "example.repl"))))
+    (t/is (s/parse-session (slurp (io/resource "example.repl")))))
 
   (t/testing "Testing various forms of syntax errors"
     (t/are [example]
