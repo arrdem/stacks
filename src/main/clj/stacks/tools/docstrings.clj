@@ -36,6 +36,7 @@
           ;; Walk forwards through the reader to the desired line
           (dotimes [_ (dec (:line (meta v)))]
             (.readLine rdr))
+          ;; Read the next form off the reader, returning its source
           (read-source rdr)))
       {:type     ::error
        :msg      "Unable to open `:resource` for reading via `clojure.lang.RT/baseLoader`."
@@ -44,3 +45,44 @@
     {:type ::error
      :msg  "Var has no `:file` metadata."
      :var  v}))
+
+(defn ->doc
+  "Constructor.
+
+  Builds & returns a documentation record."
+  [thing meta]
+  {:type ::docstring
+   :obj  thing
+   :text (:doc meta)
+   :meta (dissoc meta :doc)})
+
+(defprotocol
+    ^{:doc "A protocol providing open dispatch for fetching documentation & metadata"}
+    Documentable
+  (doc* [this]))
+
+(meta Documentable)
+
+(extend-protocol Documentable
+  nil
+  (doc* [_] nil)
+
+  clojure.lang.Namespace
+  (doc* [ns]
+    (->doc ns (meta ns)))
+
+  clojure.lang.Var
+  (doc* [var]
+    (->doc var (meta var)))
+
+  clojure.lang.Symbol
+  (doc* [sym]
+    (if (and (namespace sym)
+             (name sym))
+      (doc* (clojure.lang.Var/find sym))
+      (doc* (clojure.lang.Namespace/find sym)))))
+
+(defmacro doc
+  "Same as `#'clojure.repl/doc`, just using my `doc*` abstraction."
+  [sym]
+  (doc* sym))
