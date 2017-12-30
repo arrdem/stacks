@@ -59,30 +59,29 @@
 (defprotocol
     ^{:doc "A protocol providing open dispatch for fetching documentation & metadata"}
     Documentable
-  (doc* [this]))
+  (doc [this]
+    "Try to return a `::docstring` structure describing the given object.
+
+If no documentation can be found, returns `nil`.
+Part of the `Documentable` abstraction."))
 
 (meta Documentable)
 
 (extend-protocol Documentable
   nil
-  (doc* [_] nil)
+  (doc [_] nil)
 
   clojure.lang.Namespace
-  (doc* [ns]
+  (doc [ns]
     (->doc ns (meta ns)))
 
   clojure.lang.Var
-  (doc* [var]
+  (doc [var]
     (->doc var (meta var)))
 
   clojure.lang.Symbol
-  (doc* [sym]
+  (doc [sym]
     (if (and (namespace sym)
              (name sym))
-      (doc* (clojure.lang.Var/find sym))
-      (doc* (clojure.lang.Namespace/find sym)))))
-
-(defmacro doc
-  "Same as `#'clojure.repl/doc`, just using my `doc*` abstraction."
-  [sym]
-  (doc* sym))
+      (doc (clojure.lang.Var/find sym))
+      (doc (clojure.lang.Namespace/find sym)))))
