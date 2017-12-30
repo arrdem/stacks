@@ -81,7 +81,19 @@ Part of the `Documentable` abstraction."))
 
   clojure.lang.Symbol
   (doc [sym]
-    (if (and (namespace sym)
-             (name sym))
-      (doc (clojure.lang.Var/find sym))
-      (doc (clojure.lang.Namespace/find sym)))))
+    (cond (and (namespace sym)
+               (name sym))
+          (or (doc (clojure.lang.Var/find sym))
+              {:type ::error
+               :msg  "Unable to resolve fully qualified symbol `:sym` to a `Var`."
+               :sym  sym})
+
+          (name sym)
+          (or (doc (clojure.lang.Namespace/find sym))
+              {:type ::error
+               :msg  "Unable to resolve unqualified symbol `:sym` to a `Namespace`."
+               :sym  sym})
+
+          :else
+          {:type :error
+           :msg  "Unable to resolve `nil` symbol."})))
