@@ -8,10 +8,9 @@
                    "src/main/cljc"]
   :resource-paths ["src/main/resources"]
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [me.arrdem/commonmark-hiccup "LATEST"]
-                 [me.arrdem/detritus "LATEST"]
-                 ]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [me.arrdem/commonmark-hiccup "0.1.1"]
+                 [me.arrdem/detritus "0.3.1.4"]]
 
   :profiles
   {:test {:test-paths     ["src/test/clj"
@@ -27,7 +26,7 @@
                         [hiccup "1.0.5"]
                         [cheshire "5.8.0"]]}}
 
-  :plugins [[me.arrdem/lein-git-version "LATEST"]]
+  :plugins [[me.arrdem/lein-git-version "2.0.3"]]
 
   :git-version
   {:status-to-version
