@@ -3,6 +3,8 @@
 
 **TL;DR** A sketch at a longer-form documentation tool for Clojure.
 
+## Manifesto
+
 As a student at the University of Texas at Austin, I loved wandering around the computer science collection of the Perry Castañeda library.
 It was always quiet, the musty smell of long-untouched books was great and I could wander from shelf to shelf picking all manner of CS arcana and detail about long-obsolete and forgotten systems to peruse.
 

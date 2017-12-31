@@ -11,9 +11,8 @@
 
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [me.arrdem/commonmark-hiccup "0.1.1"]
-                 [me.arrdem/detritus "0.3.1.4"]
-                 ;; FIXME: this is for parsing javadoc, can we do it some other way?
-                 [enlive "1.1.6"]]
+                 [me.arrdem/detritus "0.3.2"]
+                 [me.arrdem/microfiche "0.1.0"]]
 
   :profiles
   {:test {:test-paths     ["src/test/clj"
