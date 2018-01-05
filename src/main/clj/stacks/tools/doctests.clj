@@ -6,25 +6,25 @@
 
 (defn normalize-profile
   "Ensure that a profile "
-  [{:keys [eval-prompt is-prompt conforms-prompt] :as profile}]
+  [{:keys [eval-prompt is-prompt valid-prompt] :as profile}]
   {:pre [(string? eval-prompt)
          (string? is-prompt)
-         (string? conforms-prompt)]}
+         (string? valid-prompt)]}
   (assoc profile
-         :prompt (format "%s|%s|%s" eval-prompt is-prompt conforms-prompt)))
+         :prompt (format "%s|%s|%s" eval-prompt is-prompt valid-prompt)))
 
 (def default-profile
   "The default profile used when parsing doctests."
   (-> (assoc sessions/default-profile
              :eval-prompt ">>"
              :is-prompt "=>"
-             :conforms-prompt ":>"
+             :valid-prompt ":>"
              :as "%")
       normalize-profile))
 
 (defn ->test [{:keys [is-prompt] :as profile} {:keys [prompt comment input] :as pair}]
   {:type    (if (= is-prompt prompt)
-              ::is ::conforms)
+              ::is ::valid)
    :input   input
    :comment comment})
 
@@ -50,7 +50,7 @@
   Doctests have not one prompt option but three:
    - `:eval-prompt`, precedes an evaluation form (default `>>`)
    - `:is-prompt`, precedes an `#'clojure.test/is` assertion (default `=>`)
-   - `:conforms-prompt`, precedes a `#'clojure.spec.alpha/valid?` assertion (default `:>`)
+   - `:valid-prompt`, precedes a `#'clojure.spec.alpha/valid?` assertion (default `:>`)
 
   Doctests also accept a string (symbol) (default `%`) to bind the
   value of the last eval form to. This allows is and conforms
@@ -84,7 +84,7 @@
                     (group-pairs-into-tests profile))})))
 
 (defn emit-assertion [_profile {:keys [type input] :as assertion}]
-  (cond (= ::conforms type)
+  (cond (= ::valid type)
         `(clojure.spec.alpha/valid? ~(read-string input))
         (= ::is type)
         `(clojure.test/is ~(read-string input))))
