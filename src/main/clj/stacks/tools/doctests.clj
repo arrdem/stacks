@@ -95,5 +95,6 @@
 
 (defn doctests->fn [{:keys [profile tests] :as doctests}]
   (binding [*ns* (clojure.lang.Namespace/findOrCreate (symbol (:namespace profile)))]
-    `(fn []
-       ~@(mapv (partial doctest->block profile) tests))))
+    (eval `(fn []
+             ~@(mapv (partial doctest->block profile) tests)))))
+
