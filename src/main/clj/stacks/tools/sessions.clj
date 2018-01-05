@@ -32,11 +32,45 @@
     ;; This pattern is a bit involved.
     ;; - Set dotall with (?s) so that . includes newlines.
     ;; - Match any preceding ";" comment lines
-    ;; - Match the prompt pattern, followed by whitespace.
+    ;; - Match the prompt pattern
+    ;; - Match (but do not capture!) whitespace greedily
     ;; - Match a bunch of text lazily, being the input form & results.
     ;; - Use lookahead to another comment, prompt or the end of file to anchor the end of the results.
-    (-> (format "(?s)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s\\s*)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
+    (-> (format "(?s)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s)(?:\\s*+)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
         (re-pattern))))
+
+(defn parse-pair-match
+  "Parse a single pair pattern match, returning a `::pair` structure."
+  [match]
+  (let [;; Destructure the match
+        [_match comment? prompt text _prompt?] match
+        ;; Make a mutable reader over the matched text.
+        ;;
+        ;; At this point the text contains both the input form, and the printed results of
+        ;; evaluation.
+        reader                                 (StringReader. text)
+        ;; Use rewrite-clj too parse the first form. This is the input form.
+        ;;
+        ;; Unfortunately there may be syntax errors. Deal with this by producing a pair
+        ;; `[rdr, form?]` so that we can "reset" the reader when there are syntax errors.
+
+        ;; FIXME (arrdem 2017-12-10): In the case of a syntax error, the performance here is
+        ;;   pretty awful because we round-trip the string through a reader to another string
+        ;;   for no reason.
+        [reader form] (try [reader (read-source reader)]
+                           (catch Exception e
+                             ;; Return a new Reader and pretend we didn't see anything.
+                             ;;
+                             ;; FIXME (arrdem 2017-12-29):
+                             ;;   Is there a good way to enable users to capture this event?
+                             [(StringReader. text) nil]))
+        ;; Consume the rest of the text, it's the results of evaluation.
+        text          (slurp reader)]
+    {:type    ::pair
+     :prompt  prompt
+     :comment comment?
+     :input   (str form)
+     :results text}))
 
 (defn parse-pairs
   "Parses the sequence of input/output pairs from the session's body.
@@ -44,43 +78,12 @@
   Returns a sequence of `::pair` structures, representing an input
   form and its results as unstructured text."
   [{:keys [prompt] :or {prompt default-prompt-pattern}} buffer]
-  (for [match (re-seq (make-pair-pattern prompt) buffer)
-        :let  [;; Destructure the match
-               [_match comment? _prompt text _prompt?] match
-               ;; Make a mutable reader over the matched text.
-               ;;
-               ;; At this point the text contains both the input form, and the printed results of
-               ;; evaluation.
-               reader (StringReader. text)
-               ;; Use rewrite-clj too parse the first form. This is the input form.
-               ;;
-               ;; Unfortunately there may be syntax errors. Deal with this by producing a pair
-               ;; `[rdr, form?]` so that we can "reset" the reader when there are syntax errors.
-
-               ;; FIXME (arrdem 2017-12-10): In the case of a syntax error, the performance here is
-               ;;   pretty awful because we round-trip the string through a reader to another string
-               ;;   for no reason.
-               [reader form] (try [reader (read-source reader)]
-                                  (catch Exception e
-                                    ;; Return a new Reader and pretend we didn't see anything.
-                                    ;;
-                                    ;; FIXME (arrdem 2017-12-29):
-                                    ;;   Is there a good way to enable users to capture this event?
-                                    [(StringReader. text) nil]))
-               ;; Consume the rest of the text, it's the results of evaluation.
-               text (slurp reader)]
-        ;; There may not have been output, or input. For instance if the match was just a prompt or
-        ;; something else.
-        :when (and form text)]
-    {:tag     ::pair
-     :comment comment?
-     :input   (str form)
-     :results text}))
+  (map parse-pair-match (re-seq (make-pair-pattern prompt) buffer)))
 
 (defn parse-session
-  "Parses a session file, returning a datastructure representing the session.
+  "Parses a session, returning a datastructure representing the session.
 
-  Session files are comprised of an optional `---` wrapped EDN header,
+  Sessions are comprised of an optional `---` wrapped EDN header,
   and a sequence of prompts, expressions and results.
 
   The EDN header structure may specify arbitrary key/value pairs,
@@ -103,6 +106,6 @@
          ;; FIXME (arrdem 2017-12-10):
          ;;   merge profiles in some remotely sane way.
          profile                    (merge profile example-profile)]
-     {:tag     ::session
+     {:type    ::session
       :profile profile
-      :pairs   (parse-pairs example-profile body)})))
+      :pairs   (parse-pairs profile body)})))

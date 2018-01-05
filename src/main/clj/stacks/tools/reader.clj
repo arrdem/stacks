@@ -15,7 +15,8 @@
     (read rdr)))
 
 (defn reading-find-form
-  [pred rdr] {:pre [(instance? java.io.PushbackReader rdr)]}
+  [pred rdr]
+  {:pre [(instance? java.io.PushbackReader rdr)]}
   (try
     (loop []
       (let [form (doto (read-clj rdr) str)]
@@ -38,6 +39,10 @@
   [^java.io.Reader rdr]
   (let [buffer (StringBuilder.)
         pbr    (proxy [java.io.PushbackReader] [rdr]
+                 (unread [i]
+                   ;; Drop the last character read when unreading to avoid double append
+                   (.setLength buffer (dec (.length buffer)))
+                   (proxy-super unread i))
                  (read []
                    (let [i (proxy-super read)]
                      (.append buffer (char i))
