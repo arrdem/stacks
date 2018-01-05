@@ -97,4 +97,3 @@
   (binding [*ns* (clojure.lang.Namespace/findOrCreate (symbol (:namespace profile)))]
     (eval `(fn []
              ~@(mapv (partial doctest->block profile) tests)))))
-
