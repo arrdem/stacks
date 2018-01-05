@@ -3,8 +3,7 @@
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:refer-clojure :exclude [name namespace])
-  (:require [clojure.java.javadoc :as javadoc]
-            [stacks.tools.reader :refer [read-source]]
+  (:require [stacks.tools.reader :refer [read-source]]
             [detritus :refer [name namespace]]
             [clojure.string :as str]))
 
@@ -72,9 +71,6 @@
 If no documentation can be found, returns `nil`.
 Part of the `Documentable` abstraction."))
 
-;; lol @ wallhack
-(alter-meta! #'javadoc/javadoc-url)
-
 (def default-options
   {})
 
@@ -111,9 +107,4 @@ Part of the `Documentable` abstraction."))
 
           :else
           {:type :error
-           :msg  "Unable to resolve `nil` symbol."}))
-
-  java.lang.Class
-  (doc [cls options]
-    (let [cls-full-name (.getName ^Class cls)
-          global-])))
+           :msg  "Unable to resolve `nil` symbol."})))
