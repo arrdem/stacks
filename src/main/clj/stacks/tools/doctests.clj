@@ -86,7 +86,7 @@
 
 (defn emit-assertion [{:keys [as] :as profile} {:keys [type input] :as assertion}]
   (cond (= ::valid type)
-        `(clojure.spec.alpha/valid? ~(read-string input) ~(symbol as))
+        `(clojure.test/is (clojure.spec.alpha/valid? ~(read-string input) ~(symbol as)))
         (= ::is type)
         `(clojure.test/is ~(read-string input))))
 
