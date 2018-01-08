@@ -119,7 +119,10 @@ For instance one could define a function `abs` as such
 
 ## Demo: Doctest runner
 
-Doctests can be searched for and installed for use by the standard clojure.test runner.
+Doctests can be searched for and installed for use by the standard `clojure.test` runner.
+
+`clojure.test` recognizes the `^:test` value of any var as a test, so this just searches for doctests, compiles and installs them.
+Installing doctests does not overwrite existing `^:test` fns, doctests are chained with other test drivers.
 
 ```clj
 user> (defn double
@@ -134,9 +137,11 @@ user> (defn double
         [x]
         (* x 2))
 #'user/double
+;; Install tests only against the user namespace
 user> (stacks.tools.doctest-runner/install-doctests! [#"user"])
 Installed doctests on #'user/double
 nil
+;; Use the normal clojure.test runner
 user> (clojure.test/run-tests)
 
 Testing user
