@@ -68,10 +68,10 @@ user> (parse-doctests (slurp (io/resource "example.doctest")))
           :assertions ({:type :stacks.tools.doctests/is,
                         :input "(= % 5/2)",
                         :comment nil})})}
-user> 
+user>
 ```
 
-## Demo: Doctest running
+## Demo: Doctest execution
 
 Doctests as data are well and good, but they can also be compiled to test functions.
 
@@ -87,5 +87,63 @@ user> (compile *2)
 ;; Run the compiled doctest function
 user> (*1)
 true
-user> 
+user>
+```
+
+The intent of doctests is that they can be embedded in docstrings.
+For instance one could define a function `abs` as such
+
+    (defn abs
+      "Return the absolute value of number `x`.
+
+      Works with all numbers supported by the runtime
+      and correctly handles integer overflow, unike `Math/abs`.
+
+      ```clj/doctest
+      >> (abs -3)
+      => 3
+
+      >> (abs -3/5)
+      => 3/5
+
+      >> (abs -3.5)
+      => 3.5
+
+      >> (abs Integer/MIN_VALUE)
+      => 2147483648
+      ```
+      "
+      {:attribution "weavejester/medley"
+       :added "0.1"}
+      [x]
+      (if (neg? x) (- x) x))
+
+## Demo: Doctest runner
+
+Doctests can be searched for and installed for use by the standard clojure.test runner.
+
+```clj
+user> (defn double
+        "A function which doubles
+
+        ```clj/doctest
+        >> (double 2)
+        => (= % 4)
+        >> (double 8)
+        => (= % 16)
+        ```"
+        [x]
+        (* x 2))
+#'user/double
+user> (stacks.tools.doctest-runner/install-doctests! [#"user"])
+Installed doctests on #'user/double
+nil
+user> (clojure.test/run-tests)
+
+Testing user
+
+Ran 1 tests containing 2 assertions.
+0 failures, 0 errors.
+{:test 1, :pass 2, :fail 0, :error 0, :type :summary}
+user>
 ```
