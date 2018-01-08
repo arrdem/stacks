@@ -2,6 +2,7 @@
   "Tools for parsing doctests as proposed by Norbert Wójtowicz into data structures."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"
              "Norbert \"pithyless\" Wójtowicz <wojtowicz.norbert@gmail.com>"]}
+  (:refer-clojure :exclude [compile])
   (:require [stacks.tools.sessions :as sessions]))
 
 (defn normalize-profile
@@ -93,7 +94,7 @@
   `(let [~(symbol as) ~(read-string input)]
      ~@(mapv (partial emit-assertion profile) assertions)))
 
-(defn doctests->fn [{:keys [profile tests] :as doctests}]
+(defn compile [{:keys [profile tests] :as doctests}]
   (binding [*ns* (clojure.lang.Namespace/findOrCreate (symbol (:namespace profile)))]
     (eval `(fn []
              ~@(mapv (partial doctest->block profile) tests)))))
