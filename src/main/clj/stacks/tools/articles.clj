@@ -191,7 +191,7 @@
      tree)
     @acc))
 
-(defn- buffer->article
+(defn parse-article
   "Takes a location and a buffer read from that location. Produces an `::article`.
 
   Articles are tagged unions, having `:source` being where the source
@@ -211,8 +211,8 @@
   "Takes a file path, resource path, File instance or raw buffer and parses it to an `::article`."
   [resource-file-or-buffer]
   (or (when (instance? java.io.File resource-file-or-buffer)
-        (buffer->article (.toURL ^java.io.File resource-file-or-buffer)
-                         (slurp resource-file-or-buffer)))
+        (parse-article (io/as-url resource-file-or-buffer)
+                       (slurp resource-file-or-buffer)))
 
       (let [f (io/file resource-file-or-buffer)]
         (when (.exists f)
@@ -220,12 +220,12 @@
           (markdown->article f)))
 
       (if-let [r (io/resource resource-file-or-buffer)]
-        (buffer->article (.toURL r)
-                         (slurp r)))
+        (parse-article (io/as-url r)
+                       (slurp r)))
 
       (when (string? resource-file-or-buffer)
-        (buffer->article (str "NO SOURCE AVAILABLE")
-                         resource-file-or-buffer))
+        (parse-article (str "NO SOURCE AVAILABLE")
+                       resource-file-or-buffer))
 
       (throw
        (IllegalArgumentException.
