@@ -13,4 +13,4 @@
         (doseq [a (:assertions t)]
           (t/is (:input a)))))
 
-    ((dt/compile doctests?))))
+    ((dt/compile-doctests doctests?))))

@@ -94,7 +94,7 @@
   `(let [~(symbol as) ~(read-string input)]
      ~@(mapv (partial emit-assertion profile) assertions)))
 
-(defn compile [{:keys [profile tests] :as doctests}]
+(defn compile-doctests [{:keys [profile tests] :as doctests}]
   (binding [*ns* (clojure.lang.Namespace/findOrCreate (symbol (:namespace profile)))]
     (eval `(fn []
              ~@(mapv (partial doctest->block profile) tests)))))
