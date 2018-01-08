@@ -75,36 +75,38 @@ Part of the `Documentable` abstraction."))
   {})
 
 (extend-protocol Documentable
-  Object
-  (doc [o]
-    (doc o default-options))
-
-  nil
-  (doc [_ options] nil)
-
   clojure.lang.Namespace
-  (doc [ns]
-    (->doc ns (meta ns)))
+  (doc
+    ([ns]
+     (->doc ns (meta ns)))
+    ([ns _options]
+     (->doc ns (meta ns))))
 
   clojure.lang.Var
-  (doc [var options]
-    (->doc var (meta var)))
+  (doc
+    ([var]
+     (->doc var (meta var)))
+    ([var options]
+     (->doc var (meta var))))
 
   clojure.lang.Symbol
-  (doc [sym options]
-    (cond (and (namespace sym)
-               (name sym))
-          (or (doc (clojure.lang.Var/find sym))
-              {:type ::error
-               :msg  "Unable to resolve fully qualified symbol `:sym` to a `Var`."
-               :sym  sym})
+  (doc
+    ([sym]
+     (doc sym default-options))
+    ([sym options]
+     (cond (and (namespace sym)
+                (name sym))
+           (or (doc (clojure.lang.Var/find sym))
+               {:type ::error
+                :msg  "Unable to resolve fully qualified symbol `:sym` to a `Var`."
+                :sym  sym})
 
-          (name sym)
-          (or (doc (clojure.lang.Namespace/find sym))
-              {:type ::error
-               :msg  "Unable to resolve unqualified symbol `:sym` to a `Namespace`."
-               :sym  sym})
+           (name sym)
+           (or (doc (clojure.lang.Namespace/find sym))
+               {:type ::error
+                :msg  "Unable to resolve unqualified symbol `:sym` to a `Namespace`."
+                :sym  sym})
 
-          :else
-          {:type :error
-           :msg  "Unable to resolve `nil` symbol."})))
+           :else
+           {:type :error
+            :msg  "Unable to resolve `nil` symbol."}))))
