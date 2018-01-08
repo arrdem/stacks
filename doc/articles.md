@@ -8,11 +8,9 @@ This lets authors build their narrative while taking the greatest advantage of a
 Once documentation is in a rich data form, applying syntax highlighting and IDE-like code analysis becomes quite tractable.
 Furthermore, the documentation itself becomes somewhat decoupled from its final rendering.
 
-Something like this...
-
 ### Demo: Article parsing
 
-[**example.md**](src/test/resources/example.md)
+[**example.md**](/src/test/resources/example.md)
 
     # Primordial Clojure {#primordial}
 
