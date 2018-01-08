@@ -1,6 +1,6 @@
 # Articles
 
-REPL sessions are great, but aren't always the appropriate pedagogical tool, especially when much explaining is required.
+REPL [Sessions](sessions.md) are great, but aren't always the appropriate pedagogical tool, especially when much explaining is required.
 
 Frequently it'd be better to interleave examples with fully formatted text.
 This lets authors build their narrative while taking the greatest advantage of available formatting, while still being precise where precision is possible about the inputs outputs and results of evaluation.
