@@ -22,10 +22,10 @@ Some subset of our tests are "interesting" and could be illustrative as examples
 Much like [Sessions](/doc/sessions.md), doctests consist of an optional EDN header followed by a sequence of forms.
 Unlike sessions which are presumed to only have one "prompt", doctests have three.
 
-The `>>` prompt (or the `:eval-prompt` option as an option or in the EDN header) is used to denote forms which should be evaluated.
+* The `>>` prompt (or the `:eval-prompt` option as an option or in the EDN header) is used to denote forms which should be evaluated.
 The value of the last evaluated form is bound to `%` (or the `:as` option).
-The `=>` prompt (or the `:is-prompt`) is used to denote forms which should be `clojure.test/is` assertions.
-The `:>` prompt (or the `:valid-prompt`) is used to denote forms which should be `clojure.spec.alpha/valid?` assertions.
+* The `=>` prompt (or the `:is-prompt`) is used to denote forms which should be `clojure.test/is` assertions.
+* The `:>` prompt (or the `:valid-prompt`) is used to denote forms which should be `clojure.spec.alpha/valid?` assertions.
 
 Just like sessions, input forms may be followed output and other text before the next prompt.
 
