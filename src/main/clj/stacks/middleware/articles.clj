@@ -2,7 +2,8 @@
   "A Stacks server middleware for rendering articles."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
-  (:require [stacks.middleware.util :refer [find-project-files]]
+  (:require [clojure.core.match :refer [match]]
+            [stacks.middleware.util :refer [find-project-files]]
             [stacks.tools.articles :as articles]))
 
 (def default-options
@@ -15,15 +16,16 @@
   (let [{:keys [articles]} project-files]
     (map articles/markdown->article articles)))
 
-#_(defn wrap-articles
-    "Middleware transformer.
+(defn wrap-articles
+  "Middleware transformer.
 
   Accepts a function of a Leiningen project which generates a Stacks content tree.
   Returns a new function of a Leiningen project which will also generate article content."
-    ([f]
-     (wrap-articles f default-options))
-    ([f options]
-     ;; FIXME (arrdem 2017-12-29):
-     ;;   Do something.
-     (fn [global-options project]
-       (-> (index-articles (merge global-options options) project) (f)))))
+  ([f]
+   (wrap-articles f default-options))
+  ([f options]
+   (fn [global-options project request]
+     (match request
+       {:type })
+
+     )))
