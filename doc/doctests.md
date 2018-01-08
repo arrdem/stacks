@@ -154,3 +154,11 @@ user>
 
 By default, the doctest runner searches for and installs all tests.
 To use it from [circleci.test](https://github.com/circleci/circleci.test) you just have to run `install-doctests!` in your `config.clj`.
+
+## Doctest limitations
+
+Doctests are **absolutely not** a replacement for your integration test suite.
+The role of doctests is to be terse executable source of examples for your documentation.
+As such, doctests should be simple, used small readable inputs and illustrate the general behavior of a function.
+
+If your function needs fixtures, meaningful configuration data or other context they probably aren't appropriate.
