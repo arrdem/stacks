@@ -151,3 +151,6 @@ Ran 1 tests containing 2 assertions.
 {:test 1, :pass 2, :fail 0, :error 0, :type :summary}
 user>
 ```
+
+By default, the doctest runner searches for and installs all tests.
+To use it from [circleci.test](https://github.com/circleci/circleci.test) you just have to run `install-doctests!` in your `config.clj`.
