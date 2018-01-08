@@ -78,11 +78,10 @@ Doctests as data are well and good, but they can also be compiled to test functi
 Continuing the example from above,
 
 ```
-user> (require '[stacks.tools.doctests :refer [compile]])
-WARNING: compile already refers to: #'clojure.core/compile in namespace: user, being replaced by: #'stacks.tools.doctests/compile
+user> (require '[stacks.tools.doctests :refer [compile-doctests]])
 nil
 ;; The doctest structure from above is *2
-user> (compile *2)
+user> (compile-doctests *2)
 #object[clojure.core$eval20571$fn__20572 "0x7eb09b8" "clojure.core$eval20571$fn__20572@7eb09b8"]
 ;; Run the compiled doctest function
 user> (*1)
