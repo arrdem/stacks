@@ -45,7 +45,8 @@
                    (proxy-super unread i))
                  (read []
                    (let [i (proxy-super read)]
-                     (.append buffer (char i))
+                     (if (not= i -1)
+                       (.append buffer (char i)))
                      i)))]
     (if (= :unknown *read-eval*)
       (throw

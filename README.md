@@ -32,6 +32,7 @@ This project is an effort to explore writing a documentation tool somewhat in th
 
 - [**Articles**](doc/articles.md), CommonMark format documents as data with extensible code blocks.
 - [**Sessions**](doc/sessions.md), REPL sessions as data.
+- [**Doctests**](doc/doctests.md), REPL examples as test cases.
 - [**Projects**](doc/projects.md), Project structures as data.
 
 ## License

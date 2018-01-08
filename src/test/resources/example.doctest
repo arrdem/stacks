@@ -1,0 +1,10 @@
+---
+{:namespace clojure.core
+ :dependencies [[org.clojure "1.6.0"]]}
+---
+>> (inc 1)
+=> 2
+>> (inc 1.0)
+=> 2.0
+>> (inc 3/2)
+=> 5/2
