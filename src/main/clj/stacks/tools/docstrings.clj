@@ -61,8 +61,8 @@
    :meta (dissoc meta :doc)})
 
 (defprotocol
-    ^{:doc "A protocol providing open dispatch for fetching documentation & metadata"}
-    Documentable
+ ^{:doc "A protocol providing open dispatch for fetching documentation & metadata"}
+ Documentable
   (doc
     [this]
     [this options]

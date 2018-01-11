@@ -50,7 +50,7 @@
   [text]
   (let [most-frequent-prefix (->> text
                                   (re-seq #"(?:\n|^)([\t ]+)")
-                                  (map second) 
+                                  (map second)
                                   frequencies
                                   (max-by second)
                                   first)]
@@ -81,7 +81,7 @@
            :when       doc?]
      (let [{:keys [content]
             :as   article} (parse-article (var-uri var) doc?)]
-       (try 
+       (try
          (let [doctests    (some->> content
                                     (keep #(when (and (tagged-union? %)
                                                       (= (:type %) ::a/code)

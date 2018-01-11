@@ -44,8 +44,8 @@
      (as-> {} ~'%
        ~@(for [[k xform] xform-mappings]
            `(assoc ~'% ~k (~xform ~'%
-                           ~@(for [b bindings]
-                               `(~k ~b))))))))
+                                  ~@(for [b bindings]
+                                      `(~k ~b))))))))
 
 (def s*
   (fn [xform]
