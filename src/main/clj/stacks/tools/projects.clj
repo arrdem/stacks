@@ -1,4 +1,4 @@
-(ns stacks.doctree
+(ns stacks.tools.projects
   "Trees of sources and docs.
 
   Articles don't come alone.
@@ -8,11 +8,11 @@
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.java.io :as io]
             [clojure.java.classpath :refer [classpath urls]]
-            [stacks.articles :as articles]
+            [stacks.tools.articles :as articles]
             [stacks.tools.namespace :refer [parse-ns-form]]
             [stacks.tools.reader :refer [read-file-ns-form]]
             [detritus :refer [zip]]
-            [detritus.types :refer [pattern? uri? file?]]
+            [detritus.types :refer [pattern? file?]]
             [detritus.update :refer [map-vals take-when]]
             [clojure.string :as string])
   (:import [java.io File]

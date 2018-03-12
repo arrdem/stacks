@@ -10,8 +10,9 @@
   :resource-paths    ["src/main/resources"]
 
   :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/java.classpath "0.2.3"]
                  [me.arrdem/commonmark-hiccup "0.1.1"]
-                 [me.arrdem/detritus "0.3.2"]
+                 [me.arrdem/detritus "0.3.3"]
                  [me.arrdem/microfiche "0.1.0"]]
 
   :profiles
