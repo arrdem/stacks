@@ -1,4 +1,4 @@
-(ns stacks.middleware.sessions
+(ns stacks.plugins.sessions
   "A Stacks server middleware for rendering sessions."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"})

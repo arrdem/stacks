@@ -41,5 +41,5 @@
   
   Returns an index state structure, and the computed index. The state
   should be retained for re-use when re-indexing changed files."
-  [middleware project options]
-  (let [[state files] (middleware project options {})]))
+  [plugins project options]
+  )

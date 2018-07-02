@@ -9,9 +9,8 @@
   [x]
   (or (symbol? x)
       (and (vector? x)
-           (or
-            (nil? (second x))
-            (keyword? (second x))))))
+           (or (nil? (second x))
+               (keyword? (second x))))))
 
 (defn- prependss
   "Prepends a symbol or a seq to coll"

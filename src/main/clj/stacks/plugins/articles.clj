@@ -1,4 +1,4 @@
-(ns stacks.middleware.articles
+(ns stacks.plugins.articles
   "A Stacks server middleware for rendering articles."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
@@ -15,17 +15,3 @@
 (defn index-articles [options project project-files]
   (let [{:keys [articles]} project-files]
     (map articles/markdown->article articles)))
-
-(defn wrap-articles
-  "Middleware transformer.
-
-  Accepts a function of a Leiningen project which generates a Stacks content tree.
-  Returns a new function of a Leiningen project which will also generate article content."
-  ([f]
-   (wrap-articles f default-options))
-  ([f options]
-   (fn [global-options project request]
-     (match request
-       {:type })
-
-     )))

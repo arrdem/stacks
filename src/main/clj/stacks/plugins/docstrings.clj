@@ -1,4 +1,4 @@
-(ns stacks.middleware.docstrings
+(ns stacks.plugins.docstrings
   "A Stacks server middleware for rendering docstrings."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"})

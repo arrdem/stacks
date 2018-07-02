@@ -38,7 +38,7 @@
 (defn find-path
   "Implementation detail.
 
-  Given a File instance, a sequence containing only the given File and its children if any."
+  Given a File instance, return a sequence containing only the given File and its children if any."
   [options cache ^File path]
   (when-not (uri-ignored? options (.toURI path))
     (or (get @cache path)
