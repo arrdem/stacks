@@ -35,7 +35,12 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
     6
     ```
 
-```clj
+```clj/session
+---
+{:namespace    stacks.articles
+ :dependencies [[org.clojure/clojure "1.8.0"]]
+ :prompt       "stacks.articles>"}
+---
 stacks.articles> (markdown->article (io/file "example.md"))
 {:type :stacks.articles/article,
  :source #object[java.net.URL "0x5451e4aa" "file:/home/arrdem/doc/dat/git/arrdem/stacks/example.md"],

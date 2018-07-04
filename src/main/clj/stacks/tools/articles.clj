@@ -64,21 +64,6 @@
       [(.group matcher "heading") (parse-kramdown-attrs (.group matcher "attrs"))]
       [heading {}])))
 
-(defn maybe-parse-session
-  "`::code` structure transformer.
-
-  If the `::code` structure is tagged `clj/session`, uses the
-  `sessions` library to parse the session into a datastructure,
-  returning an updated `::code` record containing the parsed session
-  as its `:content`.
-
-  If the tags didn't match, returns the argument `::code` record."
-  [{:keys [type tag] :as e}]
-  (if-not (and (= type ::code)
-               (= tag "clj/session"))
-    e
-    (update e :content sessions/parse-session)))
-
 (defn parse-code-block
   "Takes a FencedCodeBlock instance, and returns a `::code` tagged structure with the contents.
 
@@ -90,21 +75,25 @@
   structures, but by default returns a structure of the form
 
   ```
-  {:type     ::code
-   :contennt String ; raw content
-   :tag      String ; tag less any Kramdown attributes.
-   :attrs    Map    ; parsed Kramdown attributes.
+  {:type  ::code
+   :raw   String ; raw content
+   :tag   String ; tag less any Kramdown attributes.
+   :attrs Map    ; parsed Kramdown attributes.
   }
   ```
 
   [1] https://kramdown.gettalong.org/syntax.html#specifying-a-header-id"
-  [^FencedCodeBlock block]
-  (let [[tag attrs] (parse-kramdown-suffix (.getInfo block))]
-    (-> {:type    ::code
-         :content (.getLiteral block)
-         :tag     tag
-         :attrs   attrs}
-        maybe-parse-session)))
+  [handlers ^FencedCodeBlock block]
+  (let [[tag attrs] (parse-kramdown-suffix (.getInfo block))
+        raw (.getLiteral block)]
+    (prn tag)
+    (-> {:type ::code
+         :raw raw
+         :tag tag
+         :attrs attrs}
+        (as-> %
+            (if-let [handler (get handlers tag)]
+              (assoc % :content (handler raw)))))))
 
 (defn munge-heading
   "Munge a heading (h1 h2 etc.) to a string that could be used as an ID."
@@ -123,13 +112,16 @@
             attrs)
      heading]))
 
-(def markdown-config
+(defn markdown-config
   "An extended Markdown processor.
 
   Adds support for my fenced code block notation and my labeled headings."
+  [handlers]
   (deep-merge mark/default-config
-              {:renderer {:nodes {FencedCodeBlock parse-code-block
-                                  Heading         parse-heading}}}))
+              {:renderer
+               {:nodes
+                {FencedCodeBlock (partial parse-code-block handlers)
+                 Heading         parse-heading}}}))
 
 (defn hiccup-tag?
   "Predicate.
@@ -199,34 +191,44 @@
   labels created in this article, `:references` being the set of
   labels / link targets used in this article and `:content` being a
   tree of Hiccup vectors and tagged unions representing the article."
-  [source-loc buffer]
-  (let [content (mark/markdown->hiccup markdown-config buffer)]
+  [handlers source-loc buffer]
+  (let [content (mark/markdown->hiccup (markdown-config handlers) buffer)]
     {:type       ::article
      :source     source-loc
      :labels     (collect-labels content)
      :references (collect-references content)
      :content    content}))
 
+(def +default-handlers+
+  {"stacks/session" sessions/parse-session
+   "clj/session" sessions/parse-session})
+
 (defn markdown->article
   "Takes a file path, resource path, File instance or raw buffer and parses it to an `::article`."
-  [resource-file-or-buffer]
-  (or (when (instance? java.io.File resource-file-or-buffer)
-        (parse-article (io/as-url resource-file-or-buffer)
-                       (slurp resource-file-or-buffer)))
+  ([resource-file-or-buffer]
+   (markdown->article +default-handlers+
+                      resource-file-or-buffer))
+  ([handlers resource-file-or-buffer]
+   (or (when (instance? java.io.File resource-file-or-buffer)
+         (parse-article handlers
+                        (io/as-url resource-file-or-buffer)
+                        (slurp resource-file-or-buffer)))
 
-      (let [f (io/file resource-file-or-buffer)]
-        (when (.exists f)
-          ;; Can't recur from here >.>
-          (markdown->article f)))
+       (let [f (io/file resource-file-or-buffer)]
+         (when (.exists f)
+           ;; Can't recur from here >.>
+           (markdown->article handlers f)))
 
-      (if-let [r (io/resource resource-file-or-buffer)]
-        (parse-article (io/as-url r)
-                       (slurp r)))
+       (if-let [r (io/resource resource-file-or-buffer)]
+         (parse-article handlers
+                        (io/as-url r)
+                        (slurp r)))
 
-      (when (string? resource-file-or-buffer)
-        (parse-article (str "NO SOURCE AVAILABLE")
-                       resource-file-or-buffer))
+       (when (string? resource-file-or-buffer)
+         (parse-article handlers
+                        (str "NO SOURCE AVAILABLE")
+                        resource-file-or-buffer))
 
-      (throw
-       (IllegalArgumentException.
-        "Don't know what I got but couldn't convert it to a buffer for parsing!"))))
+       (throw
+        (IllegalArgumentException.
+         "Don't know what I got but couldn't convert it to a buffer for parsing!")))))
