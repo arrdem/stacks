@@ -34,11 +34,11 @@ Just like sessions, input forms may be followed output and other text before the
 Doctests can be parsed to a data structure using `stacks.tools.docttests`
 
 ```clj
-user> (require '[clojure.java.io :as io])
+> (require '[clojure.java.io :as io])
 nil
-user> (require '[stacks.tools.doctests :refer [parse-doctests]])
+> (require '[stacks.tools.doctests :refer [parse-doctests]])
 nil
-user> (parse-doctests (slurp (io/resource "example.doctest")))
+> (parse-doctests (slurp (io/resource "example.doctest")))
 {:type :stacks.tools.doctests/doctests,
  :profile {:prompt ">>|=>|:>",
            :namespace clojure.core,
@@ -68,7 +68,7 @@ user> (parse-doctests (slurp (io/resource "example.doctest")))
           :assertions ({:type :stacks.tools.doctests/is,
                         :input "(= % 5/2)",
                         :comment nil})})}
-user>
+>
 ```
 
 ## Demo: Doctest execution

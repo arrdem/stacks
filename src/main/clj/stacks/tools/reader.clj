@@ -2,7 +2,19 @@
   "Helpers for working with readers and reading files."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io])
+  (:import java.io.PushbackReader))
+
+(defn read-whitespace
+  "Consume any leading whitespace off of the given reader, returning it."
+  [^PushbackReader reader]
+  (loop []
+    (let [ch (.read reader)]
+      (if (Character/isWhitespace ch)
+        (recur)
+        (when (not= ch -1)
+          (.unread reader ch)))))
+  reader)
 
 (defn read-clj
   "Private implementation detail copied from tools.namespace.

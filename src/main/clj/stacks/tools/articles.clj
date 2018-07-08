@@ -6,9 +6,11 @@
             [clojure.walk :as walk]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [stacks.tools.sessions :as sessions]
             [detritus.update :refer [deep-merge]]
-            [commonmark-hiccup.core :as mark])
+            [commonmark-hiccup.core :as mark]
+            [me.raynes.conch :refer [let-programs]])
   (:import [org.commonmark.node
             ,,FencedCodeBlock
             ,,Heading]))
@@ -64,6 +66,46 @@
       [(.group matcher "heading") (parse-kramdown-attrs (.group matcher "attrs"))]
       [heading {}])))
 
+(defn handle-default [tag attrs raw]
+  {:type ::code
+   :tag tag
+   :attrs attrs
+   :raw raw})
+
+(defn handle-pygmentize
+  "Handle most code blocks by pygmentizing the content."
+  [tag attrs raw]
+  (if (Boolean/parseBoolean (get attrs :highlight "true"))
+    (let-programs [pygmentize "pygmentize"]
+      (pygmentize "-fhtml"
+                  (str "-l" tag)
+                  "-Ostripnl=False,encoding=utf-8"
+                  {:in raw}))
+    (handle-default tag attrs raw)))
+
+(defn pygments-lexers []
+  (let-programs [pygmentize "pygmentize"]
+    (->> (pygmentize "-L" "lexers")
+         (re-seq #"(?sm)^\* (((, )?[^:,\s]+)+):")
+         (mapcat (fn [[_text names]]
+                   (str/split names #", "))))))
+
+(defn handle-graphviz
+  "Handle graphviz by compiling it ... to inline image data I guess?
+
+  Unless render=false."
+  [tag attrs raw]
+  (if (Boolean/parseBoolean (get attrs :render "false"))
+    (let-programs [graphviz "dot"]
+      [:div {:class #{"highlight"}}
+       (graphviz "-Tsvg"
+                 {:in raw})])
+    (handle-default tag attrs raw)))
+
+(defn handle-session [tag attrs raw]
+  (assoc (handle-default tag attrs raw)
+         :content (sessions/parse-session raw)))
+
 (defn parse-code-block
   "Takes a FencedCodeBlock instance, and returns a `::code` tagged structure with the contents.
 
@@ -82,18 +124,19 @@
   }
   ```
 
+  Handlers support the attributes \"render\" and
+  \"highlight\". \"highlight\" is true by default, and directs a
+  handler to produce a \"pretty\" form of the given text. \"render\"
+  is false by default, and directs the handler to produce an ARBITRARY
+  product from the text - for instance an SVG image.
+
   [1] https://kramdown.gettalong.org/syntax.html#specifying-a-header-id"
   [handlers ^FencedCodeBlock block]
   (let [[tag attrs] (parse-kramdown-suffix (.getInfo block))
-        raw (.getLiteral block)]
-    (prn tag)
-    (-> {:type ::code
-         :raw raw
-         :tag tag
-         :attrs attrs}
-        (as-> %
-            (if-let [handler (get handlers tag)]
-              (assoc % :content (handler raw)))))))
+        raw (.getLiteral block)
+        handler (get handlers tag (get handlers ::default-handler))]
+
+    (handler tag attrs raw)))
 
 (defn munge-heading
   "Munge a heading (h1 h2 etc.) to a string that could be used as an ID."
@@ -200,8 +243,16 @@
      :content    content}))
 
 (def +default-handlers+
-  {"stacks/session" sessions/parse-session
-   "clj/session" sessions/parse-session})
+  (-> {"clj+session" handle-session
+       "dot" handle-graphviz
+       ::default-handler handle-default}
+      (as-> % 
+        (reduce #(assoc %1 %2 handle-pygmentize)
+                % (pygments-lexers))
+        ;; FIXME: Pygments doesn't support cljc
+        (if-not (get % "cljc")
+          (assoc % "cljc" (get % "clj"))
+          %))))
 
 (defn markdown->article
   "Takes a file path, resource path, File instance or raw buffer and parses it to an `::article`."

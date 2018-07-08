@@ -3,8 +3,9 @@
   {:authors ["Reid McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.java.io :as io]
-            [stacks.tools.reader :refer [read-source]])
+            [stacks.tools.reader :refer [read-source read-whitespace]])
   (:import [java.io
+            ,,PushbackReader
             ,,Reader
             ,,StringReader]))
 
@@ -36,7 +37,7 @@
     ;; - Match (but do not capture!) whitespace greedily
     ;; - Match a bunch of text lazily, being the input form & results.
     ;; - Use lookahead to another comment, prompt or the end of file to anchor the end of the results.
-    (-> (format "(?s)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s)(?:\\s*+)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
+    (-> (format "(?sm)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s)(?:\\s*+)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
         (re-pattern))))
 
 (defn parse-pair-match
@@ -48,7 +49,7 @@
         ;;
         ;; At this point the text contains both the input form, and the printed results of
         ;; evaluation.
-        reader                                 (StringReader. text)
+        reader (StringReader. text)
         ;; Use rewrite-clj too parse the first form. This is the input form.
         ;;
         ;; Unfortunately there may be syntax errors. Deal with this by producing a pair
@@ -64,6 +65,10 @@
                              ;; FIXME (arrdem 2017-12-29):
                              ;;   Is there a good way to enable users to capture this event?
                              [(StringReader. text) nil]))
+
+        ;; Eat any whitespace between the end of the prompt form and the result
+        reader (read-whitespace (PushbackReader. reader))
+
         ;; Consume the rest of the text, it's the results of evaluation.
         text          (slurp reader)]
     {:type    ::pair

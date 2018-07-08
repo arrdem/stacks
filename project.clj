@@ -13,7 +13,8 @@
                  [org.clojure/java.classpath "0.2.3"]
                  [me.arrdem/commonmark-hiccup "0.1.1"]
                  [me.arrdem/detritus "0.3.3"]
-                 [me.arrdem/microfiche "0.1.0"]]
+                 [me.arrdem/microfiche "0.1.0"]
+                 [me.raynes/conch "0.8.0"]]
 
   :profiles
   {:test {:test-paths     ["src/test/clj"

@@ -39,9 +39,9 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
 ---
 {:namespace    stacks.articles
  :dependencies [[org.clojure/clojure "1.8.0"]]
- :prompt       "stacks.articles>"}
+ :prompt       "^>"}
 ---
-stacks.articles> (markdown->article (io/file "example.md"))
+> (markdown->article (io/file "example.md"))
 {:type :stacks.articles/article,
  :source #object[java.net.URL "0x5451e4aa" "file:/home/arrdem/doc/dat/git/arrdem/stacks/example.md"],
  :labels #{"primordial" "ex1" "ex2"},
@@ -73,6 +73,35 @@ stacks.articles> (markdown->article (io/file "example.md"))
                                :comment nil,
                                :input "(+ foo 3)",
                                :results "6"})}})}
-stacks.articles>
+>
 ```
 
+## Embedded content
+
+Articles also support more general content embedding, including syntax highlighting and even full rendering of nested documents.
+The precise mechanism here is a work in progress - I want to stay as close to possible to standard Markdown syntax, rather than introduce a whole new preprocessor language ala Liquid.
+
+### Demo: Embedded basic syntax highlighting
+
+Nested content is supported not just as sessions, but with syntax highlighting.
+So long as the `{highlight=false}` option isn't set on a code block, if it isn't otherwise handled it will be rendered with Pygments if at all possible.
+For instance, rendering some Python -
+
+```py
+def foo(x: int, y: int):
+  return x + y
+```
+
+### Demo: Embedded graph
+
+Not only is highlighting of nested content supported, but full rendering is also supported.
+Language processors may choose to provide a `{render=true}` behavior for compiling rather than simply highlighting the code block.
+This provides a native alternative to traditional Makefile based workflows for compiling artifacts.
+
+For instance, GraphViz (which happens to not have Pygments support) supports full rendering to inline SVG.
+
+```dot {render=true}
+digraph foo {
+  a -> b;
+}
+```
