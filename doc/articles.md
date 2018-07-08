@@ -14,12 +14,11 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
 
     # Primordial Clojure {#primordial}
 
-    ```clj/session {#ex1}
+    ```clj+session {#ex1}
     ---
     {:namespace user
-     :dependencies [[org.clojure/clojure "1.0.0"]]
-     :session "primordial"
-    }
+     :session "primordial"}
+    ---
     user> (def foo 3)
     #'user/foo
     ```
@@ -27,7 +26,7 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
     Some continued text in the middle of the example, and now
     we want to continue the same session with another example
 
-    ```clj/session {#ex2}
+    ```clj+session {#ex2}
     ---
     {:session "primordial"}
     ---
@@ -35,45 +34,13 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
     6
     ```
 
-```clj/session
+```clj+session {render=true}
 ---
-{:namespace    stacks.articles
- :dependencies [[org.clojure/clojure "1.8.0"]]
- :prompt       "^>"}
+{:namespace user
+ :eval true}
 ---
-> (markdown->article (io/file "example.md"))
-{:type :stacks.articles/article,
- :source #object[java.net.URL "0x5451e4aa" "file:/home/arrdem/doc/dat/git/arrdem/stacks/example.md"],
- :labels #{"primordial" "ex1" "ex2"},
- :references #{},
- :content ([:h1 {:id "primordial"} "Primordial Clojure"]
-           {:type :stacks.articles/code,
-            :tag "clj/session",
-            :attrs {:id "ex1"}
-            :content {:tag :stacks.sessions/session,
-                      :profile {:prompt "^[^>]*?>\\s+",
-                                :namespace user,
-                                :dependencies [[org.clojure/clojure "1.9.0"]]},
-                      :pairs ({:tag :stacks.sessions/pair,
-                               :comment nil,
-                               :input "(def foo 3)",
-                               :results "#'user/foo"})}}
-           [:p {}
-            "Some continued text in the middle of the example,"
-            " and now we want to continue the same session with another example"]
-           {:type :stacks.articles/code,
-            :tag "clj/session",
-            :attrs {:id "ex2"}
-            :content {:tag :stacks.sessions/session,
-                      :profile {:prompt "^[^>]*?>\\s+",
-                                :namespace user,
-                                :dependencies [[org.clojure/clojure "1.9.0"]],
-                                :session "primordial"},
-                      :pairs ({:tag :stacks.sessions/pair,
-                               :comment nil,
-                               :input "(+ foo 3)",
-                               :results "6"})}})}
->
+> (stacks.tools.articles/markdown->article
+    (clojure.java.io/resource "example.md"))
 ```
 
 ## Embedded content

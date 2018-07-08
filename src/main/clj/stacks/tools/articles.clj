@@ -7,7 +7,6 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [stacks.tools.sessions :as sessions]
             [detritus.update :refer [deep-merge]]
             [commonmark-hiccup.core :as mark]
             [me.raynes.conch :refer [let-programs]])
@@ -103,8 +102,18 @@
     (handle-default tag attrs raw)))
 
 (defn handle-session [tag attrs raw]
-  (assoc (handle-default tag attrs raw)
-         :content (sessions/parse-session raw)))
+  (if (Boolean/parseBoolean (get attrs :render "false"))
+    (do (require 'stacks.tools.sessions)
+        (as-> raw %
+          ((resolve 'stacks.tools.sessions/parse-session) %)
+          ((resolve 'stacks.tools.sessions/render-session) %)))
+    (handle-default tag attrs raw)))
+
+(defn handle-doctest [tag attrs raw]
+  (if (Boolean/parseBoolean (get attrs :render "false"))
+    (do (require 'stacks.tools.doctests)
+        ((resolve 'stacks.tools.doctests/parse-doctests) raw))
+    (handle-default tag attrs raw)))
 
 (defn parse-code-block
   "Takes a FencedCodeBlock instance, and returns a `::code` tagged structure with the contents.
@@ -143,7 +152,7 @@
   [^String heading]
   (-> heading
       (.toLowerCase)
-      (.replaceAll "\\s" "-")))
+      (.replaceAll "[\\s\\p{Punct}]+" "-")))
 
 (defn parse-heading
   "Takes a Heading instance, and returns an appropriate Hiccup `:h`
@@ -244,6 +253,7 @@
 
 (def +default-handlers+
   (-> {"clj+session" handle-session
+       "clj+doctest" handle-doctest
        "dot" handle-graphviz
        ::default-handler handle-default}
       (as-> % 

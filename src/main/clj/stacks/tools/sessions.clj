@@ -3,6 +3,8 @@
   {:authors ["Reid McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [stacks.tools.prepl :as prepl :refer [prepl resolve-fn]]
             [stacks.tools.reader :refer [read-source read-whitespace]])
   (:import [java.io
             ,,PushbackReader
@@ -16,13 +18,31 @@
 (def default-prompt-pattern
   "Default pattern for recognizing prompts.
   Assumes that > is the prompt character, and that it may be followed by a bunch of whitespace."
-  "^[^>]*?>\\s+")
+  "^[\\w\\.&&[^>]]{0,16}?>")
 
 (def default-profile
-  "Default pseudo-leiningen profile in which to analyze an example.ss"
-  {:prompt       default-prompt-pattern
-   :namespace    'user
-   :dependencies '[[org.clojure/clojure "1.9.0"]]})
+  "Default pseudo-leiningen profile in which to analyze an example."
+  {;; The pattern string used for parsing
+   :prompt default-prompt-pattern
+   ;; The namespace in which evaluation should occur
+   :namespace 'user
+   ;; Leiningen style dependencies (ignored for now, gets Clojure "for free")
+   :dependencies '[[org.clojure/clojure "1.9.0"]]
+   ;; Whether or not the session needs to be evaluated to be rendered
+   ;; - eg whether all input and output is already included in the
+   ;; documented and formatted as the user wishes it to be.
+   ;;
+   ;; This is off by default as a conservative setting - stacks seeks
+   ;; to avoid being really smart unless the user desires it, and
+   ;; performing code evaluation is at least smart if not magical.
+   :eval false
+   ;; A symbol resolving to the function to be used for formatting the
+   ;; results of evaluation. Printing occurs in the same context as
+   ;; evaluation - this allows for the use of custom or 3rdparty
+   ;; printing behavior.
+   ;;
+   ;; Default's to Clojure's default printer.
+   :printer 'clojure.core/prn})
 
 (defn make-pair-pattern
   "Constructs a pattern which matches the given prompt (or prompt
@@ -37,7 +57,7 @@
     ;; - Match (but do not capture!) whitespace greedily
     ;; - Match a bunch of text lazily, being the input form & results.
     ;; - Use lookahead to another comment, prompt or the end of file to anchor the end of the results.
-    (-> (format "(?sm)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(%s)(?:\\s*+)(.*?)((?=(%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
+    (-> (format "(?sm)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(^%s)(?:\\s*+)(.*?)((?=(^%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
         (re-pattern))))
 
 (defn parse-pair-match
@@ -75,14 +95,16 @@
      :prompt  prompt
      :comment comment?
      :input   (str form)
-     :results text}))
+     :results [{::val text}]}))
 
 (defn parse-pairs
   "Parses the sequence of input/output pairs from the session's body.
 
   Returns a sequence of `::pair` structures, representing an input
   form and its results as unstructured text."
-  [{:keys [prompt] :or {prompt default-prompt-pattern}} buffer]
+  [{:keys [prompt]
+    :or {prompt default-prompt-pattern}}
+   buffer]
   (map parse-pair-match (re-seq (make-pair-pattern prompt) buffer)))
 
 (defn parse-session
@@ -114,3 +136,50 @@
      {:type    ::session
       :profile profile
       :pairs   (parse-pairs profile body)})))
+
+(defn render-session
+  "Given a parsed session structure, render it, returning either Hiccup
+  elements or bare HTML text."
+  ([session]
+   (render-session (:profile session default-profile) session))
+  ([{:keys [dependencies namespace printer] :as profile}
+    session]
+   ;; FIXME (arrdem 2018-07-08):
+   ;;
+   ;;   This is the shittiest possible implementation of taking a
+   ;;   session structure and evaluating it to produce a "rendered"
+   ;;   Hiccup sub-document.
+   ;;
+   ;;   Ideally code execution would occur in a contained, parallel
+   ;;   environment such as a boot pod or even a separate JVM, but
+   ;;   here we are.
+   (update session
+           :pairs
+           (fn [pairs]
+             (if-not (or (:evaluate profile)
+                         (:eval profile)
+                         (:evaluate session)
+                         (:eval session))
+               ;; Users can opt out, it's off by default
+               pairs
+
+               ;; If the user wants us to eval the session...
+               (let [acc (volatile! [])]
+                 (prepl (clojure.lang.LineNumberingPushbackReader.
+                         (StringReader.
+                          (str/join "\n" (map :input pairs))))
+                        (fn [{:keys [type val] :as res}]
+                          (vswap! acc conj
+                                  (if (= type ::prepl/ret)
+                                    (-> res
+                                        (assoc ::val
+                                               (binding [*out* (java.io.StringWriter.)]
+                                                 ((resolve-fn printer) val)
+                                                 (.toString *out*))))
+                                    res)))
+                        :ns namespace)
+                 (map-indexed (fn [idx pair]
+                                (let [results (filter #(= (:form-id %) idx) @acc)
+                                      ret (first (filter #(= (:type %) ::prepl/ret) results))]
+                                  (assoc pair :results (vec results))))
+                              pairs)))))))

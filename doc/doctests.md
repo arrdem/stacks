@@ -7,15 +7,12 @@ Some subset of our tests are "interesting" and could be illustrative as examples
 
     ---
     {:namespace user
-     :dependencies [[org.clojure "1.6.0"]]
      :as "%"}
     ---
     >> (inc 1)
     => (= % 2)
-
     >> (inc 1.0)
     => (= % 2.0)
-
     >> (inc 3/2)
     => (= % 5/2)
 
@@ -25,7 +22,7 @@ Unlike sessions which are presumed to only have one "prompt", doctests have thre
 * The `>>` prompt (or the `:eval-prompt` option as an option or in the EDN header) is used to denote forms which should be evaluated.
 The value of the last evaluated form is bound to `%` (or the `:as` option).
 * The `=>` prompt (or the `:is-prompt`) is used to denote forms which should be `clojure.test/is` assertions.
-* The `:>` prompt (or the `:valid-prompt`) is used to denote forms which should be `clojure.spec.alpha/valid?` assertions.
+* The `:>` prompt (or the `:valid-prompt`) is used to denote forms which should be `clojure.spec(.alpha)/valid?` assertions.
 
 Just like sessions, input forms may be followed output and other text before the next prompt.
 
@@ -33,41 +30,16 @@ Just like sessions, input forms may be followed output and other text before the
 
 Doctests can be parsed to a data structure using `stacks.tools.docttests`
 
-```clj
+```clj+session {render=true}
+---
+{:namespace user
+ :session "doctests-demo"
+ :eval true
+ :pprint clojure.pprint/pprint}
+---
 > (require '[clojure.java.io :as io])
-nil
 > (require '[stacks.tools.doctests :refer [parse-doctests]])
-nil
 > (parse-doctests (slurp (io/resource "example.doctest")))
-{:type :stacks.tools.doctests/doctests,
- :profile {:prompt ">>|=>|:>",
-           :namespace clojure.core,
-           :dependencies [[org.clojure "1.6.0"]],
-           :eval-prompt ">>",
-           :is-prompt "=>",
-           :valid-prompt ":>",
-           :as "%"},
- :tests ({:comment nil,
-          :input "(inc 1)",
-          :results "\n",
-          :type :stacks.tools.doctests/doctest,
-          :assertions ({:type :stacks.tools.doctests/is,
-                        :input "(= % 2)",
-                        :comment nil})}
-         {:comment nil,
-          :input "(inc 1.0)",
-          :results "\n",
-          :type :stacks.tools.doctests/doctest,
-          :assertions ({:type :stacks.tools.doctests/is,
-                        :input "(= % 2.0)",
-                        :comment nil})}
-         {:comment nil,
-          :input "(inc 3/2)",
-          :results "\n",
-          :type :stacks.tools.doctests/doctest,
-          :assertions ({:type :stacks.tools.doctests/is,
-                        :input "(= % 5/2)",
-                        :comment nil})})}
 >
 ```
 
@@ -77,16 +49,17 @@ Doctests as data are well and good, but they can also be compiled to test functi
 
 Continuing the example from above,
 
-```
-user> (require '[stacks.tools.doctests :refer [compile-doctests]])
-nil
+```clj+session {render=true}
+---
+{:session "doctests-demo"}
+---
+> (require '[stacks.tools.doctests :refer [compile-doctests]])
 ;; The doctest structure from above is *2
-user> (compile-doctests *2)
-#object[clojure.core$eval20571$fn__20572 "0x7eb09b8" "clojure.core$eval20571$fn__20572@7eb09b8"]
+> (compile-doctests *2)
 ;; Run the compiled doctest function
-user> (*1)
+> (*1)
 true
-user>
+>
 ```
 
 The intent of doctests is that they can be embedded in docstrings.
@@ -98,7 +71,7 @@ For instance one could define a function `abs` as such
       Works with all numbers supported by the runtime
       and correctly handles integer overflow, unike `Math/abs`.
 
-      ```clj/doctest
+      ```clj+doctest
       >> (abs -3)
       => 3
 
@@ -124,32 +97,25 @@ Doctests can be searched for and installed for use by the standard `clojure.test
 `clojure.test` recognizes the `^:test` value of any var as a test, so this just searches for doctests, compiles and installs them.
 Installing doctests does not overwrite existing `^:test` fns, doctests are chained with other test drivers.
 
-```clj
-user> (defn double
-        "A function which doubles
-
-        ```clj/doctest
-        >> (double 2)
-        => (= % 4)
-        >> (double 8)
-        => (= % 16)
-        ```"
-        [x]
-        (* x 2))
-#'user/double
+```clj+session {render=true}
+---
+{:session "doctests-demo"}
+---
+> (defn double
+     "A function which doubles
+     ```clj/doctest
+     >> (double 2)
+     => (= % 4)
+     >> (double 8)
+     => (= % 16)
+     ```"
+     [x]
+     (* x 2))
 ;; Install tests only against the user namespace
-user> (stacks.tools.doctest-runner/install-doctests! [#"user"])
-Installed doctests on #'user/double
-nil
+> (stacks.tools.doctest-runner/install-doctests! [#"user"])
 ;; Use the normal clojure.test runner
-user> (clojure.test/run-tests)
-
-Testing user
-
-Ran 1 tests containing 2 assertions.
-0 failures, 0 errors.
-{:test 1, :pass 2, :fail 0, :error 0, :type :summary}
-user>
+> (clojure.test/run-tests)
+>
 ```
 
 By default, the doctest runner searches for and installs all tests.

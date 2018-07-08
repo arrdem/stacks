@@ -28,9 +28,7 @@ The namespace context in which reading and evaluation occurs may also be specifi
 [**example.repl**](/src/test/resources/example.repl):
 ```
 ---
-{:namespace    user
- :dependencies [[org.clojure/clojure "1.8.0"]]
- :prompt       "user>"}
+{:namespace user}
 ---
 user> (+ 1 1)
 1
@@ -38,7 +36,6 @@ user> (+ 1 1)
 user> (conj #{:foo :bar} :baz)
 #{:foo :bar :baz}
 ;; That's all folks!
-
 ```
 
 Example files can be loaded into a data structure, describing the example as a whole and each given `(input, output)` pair.
@@ -47,20 +44,13 @@ Example files can be loaded into a data structure, describing the example as a w
 
 For instance, in one version of stacks the above file loaded to the data structure
 
-```clj
-stacks.session> (parse-session (slurp "example.repl"))
-{:tag     :stacks.sessions/session,
- :profile {:prompt "user>",
-           :namespace user,
-           :dependencies [[org.clojure/clojure "1.8.0"]]},
- :pairs   ({:tag     :stacks.sessions/pair,
-            :comment nil,
-            :input   "(+ 1 1)",
-            :results "1"}
-           {:tag     :stacks.sessions/pair,
-            :comment ";; Some comment\n",
-            :input   "(conj #{:foo :bar} :baz)",
-            :results "#{:foo :bar :baz}"})}
+```clj+session
+---
+{:namespace user
+ :eval true}
+---
+> (stacks.session/parse-session
+    (slurp "example.repl"))
 ```
 
 From this structure and given the namespace in which the session occurs it would be possible to use `clojure.tools.analyzer.jvm` to perform expression analysis & macroexpansion for full syntax highlighting.

@@ -1,6 +1,6 @@
 # Primordial Clojure {#primordial}
 
-```clj/session {#ex1}
+```clj+session {#ex1}
 ---
 {:namespace user
  :dependencies [[org.clojure/clojure "1.0.0"]]
@@ -13,7 +13,7 @@ user> (def foo 3)
 Some continued text in the middle of the example, and now
 we want to continue the same session with another example
 
-```clj/session {#ex2}
+```clj+session {#ex2}
 ---
 {:session "primordial"}
 ---

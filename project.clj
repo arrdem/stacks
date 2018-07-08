@@ -9,26 +9,28 @@
   :java-source-paths ["src/main/jvm"]
   :resource-paths    ["src/main/resources"]
 
-  :dependencies [[org.clojure/clojure "1.9.0"]
+  :dependencies [[org.clojure/clojure "1.10.0-alpha6"]
                  [org.clojure/java.classpath "0.2.3"]
                  [me.arrdem/commonmark-hiccup "0.1.1"]
                  [me.arrdem/detritus "0.3.3"]
                  [me.arrdem/microfiche "0.1.0"]
-                 [me.raynes/conch "0.8.0"]]
+                 [me.raynes/conch "0.8.0"]
+                 [boot/pod "2.8.1"]]
 
   :profiles
   {:test {:test-paths     ["src/test/clj"
                            "src/test/cljc"]
           :resource-paths ["src/test/resources"]}
 
-   :dev {:dependencies [;; For the server, can this be a different artifact?
-                        [ring/ring-core "1.6.3"]
-                        [ring/ring-jetty-adapter "1.6.3"]
-                        #_[selmer "1.11.3"
-                           :exclude [hiccups]]
-                        [compojure "1.6.0"]
-                        [hiccup "1.0.5"]
-                        [cheshire "5.8.0"]]}}
+   :dev [:test
+         {:dependencies [;; For the server, can this be a different artifact?
+                         [ring/ring-core "1.6.3"]
+                         [ring/ring-jetty-adapter "1.6.3"]
+                         #_[selmer "1.11.3"
+                            :exclude [hiccups]]
+                         [compojure "1.6.0"]
+                         [hiccup "1.0.5"]
+                         [cheshire "5.8.0"]]}]}
 
   :plugins [[me.arrdem/lein-git-version "2.0.3"]]
 
