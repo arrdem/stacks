@@ -53,7 +53,7 @@
                                                                                 :form-id current-form-id})
                                                                       nil)
                                                 *err* (PrintWriter-on #(out-fn {:type ::stream
-                                                                                :strem ::err
+                                                                                :stream ::err
                                                                                 :val %1
                                                                                 :form-id current-form-id})
                                                                       nil)]
@@ -73,17 +73,21 @@
                                          :form-id current-form-id})
                                 true)))
                           (catch Throwable ex
-                            (set! *e ex)
                             (out-fn {:type ::ret
                                      :val (Throwable->map ex)
                                      :ns (str (.name *ns*))
-                                     :form s})
+                                     :form s
+                                     :form-id current-form-id})
+                            (prn ex)
+                            (set! *e ex)
                             true)))
                       (catch Throwable ex
-                        (set! *e ex)
                         (out-fn {:type ::ret
                                  :val (Throwable->map ex)
-                                 :ns (str (.name *ns*))})
+                                 :ns (str (.name *ns*))
+                                 :form-id current-form-id})
+                        (prn ex)
+                        (set! *e ex)
                         true))
                 (vswap! form-id inc)
                 (recur))))

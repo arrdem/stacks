@@ -34,13 +34,14 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
     6
     ```
 
-```clj+session {render=true}
+```clj+session
 ---
 {:namespace user
  :eval true}
 ---
-> (stacks.tools.articles/markdown->article
-    (clojure.java.io/resource "example.md"))
+> (stacks.tools.articles/parse-article
+   stacks.tools.articles/handle-parse-block
+   (clojure.java.io/resource "example.md"))
 ```
 
 ## Embedded content
@@ -65,7 +66,7 @@ Not only is highlighting of nested content supported, but full rendering is also
 Language processors may choose to provide a `{render=true}` behavior for compiling rather than simply highlighting the code block.
 This provides a native alternative to traditional Makefile based workflows for compiling artifacts.
 
-For instance, GraphViz (which happens to not have Pygments support) supports full rendering to inline SVG.
+For instance, Shelving has a middelware for GraphViz (which happens to not have a Pygments language yet) which does full rendering to inline SVG.
 
 ```dot {render=true}
 digraph foo {

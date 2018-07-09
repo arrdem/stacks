@@ -3,13 +3,9 @@
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"})
 
-(def wrap-sessions
-  "Middleware transformer.
-
-  Accepts a function of a Leiningen project which generates a Stacks content tree.
-  Returns a new function of a Leiningen project which will also generate session content."
-  (fn [stack]
-    (fn [project]
-      ;; FIXME (arrdem 2017-12-29):
-      ;;   Do something.
-      (stack project))))
+(defn parse-session [tag attrs raw]
+  (if (Boolean/parseBoolean (get attrs :render "false"))
+    (do (require 'stacks.tools.sessions)
+        (as-> raw %
+          ((resolve 'stacks.tools.sessions/parse-session) %)))
+    (parse-default tag attrs raw)))

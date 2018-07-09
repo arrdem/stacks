@@ -1,0 +1,20 @@
+.session .readline {
+  margin-bottom: 0.5em;
+}
+.session .readline .namespace,
+.session .readline .prompt,
+.session .readline .input {
+  float: left;
+}
+.session .readline .namespace,
+.session .readline .prompt {
+  padding-right: 0.5em;
+}
+.session .readline .input .highlight pre {
+  margin: 0px;
+}
+.session .out,
+.session .err,
+.session .ret {
+  clear: both;
+}

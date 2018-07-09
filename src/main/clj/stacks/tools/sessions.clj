@@ -5,7 +5,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [stacks.tools.prepl :as prepl :refer [prepl resolve-fn]]
-            [stacks.tools.reader :refer [read-source read-whitespace]])
+            [stacks.tools.reader :refer [read-source read-whitespace]]
+            [stacks.tools.pygments :refer [pygmentize]])
   (:import [java.io
             ,,PushbackReader
             ,,Reader
@@ -42,7 +43,7 @@
    ;; printing behavior.
    ;;
    ;; Default's to Clojure's default printer.
-   :printer 'clojure.core/prn})
+   :printer 'clojure.pprint/pprint})
 
 (defn make-pair-pattern
   "Constructs a pattern which matches the given prompt (or prompt
@@ -137,11 +138,11 @@
       :profile profile
       :pairs   (parse-pairs profile body)})))
 
-(defn render-session
-  "Given a parsed session structure, render it, returning either Hiccup
-  elements or bare HTML text."
+(defn evaluate-session
+  "Given a parsed session structure, evaluate it (if evaluation was
+  requested), returning an updated session."
   ([session]
-   (render-session (:profile session default-profile) session))
+   (evaluate-session (:profile session default-profile) session))
   ([{:keys [dependencies namespace printer] :as profile}
     session]
    ;; FIXME (arrdem 2018-07-08):
@@ -161,25 +162,51 @@
                          (:evaluate session)
                          (:eval session))
                ;; Users can opt out, it's off by default
-               pairs
+               (do (println "Not evaluating session " session)
+                   pairs)
 
                ;; If the user wants us to eval the session...
-               (let [acc (volatile! [])]
+               (let [acc (atom [])]
                  (prepl (clojure.lang.LineNumberingPushbackReader.
                          (StringReader.
                           (str/join "\n" (map :input pairs))))
                         (fn [{:keys [type val] :as res}]
-                          (vswap! acc conj
-                                  (if (= type ::prepl/ret)
-                                    (-> res
-                                        (assoc ::val
-                                               (binding [*out* (java.io.StringWriter.)]
-                                                 ((resolve-fn printer) val)
-                                                 (.toString *out*))))
-                                    res)))
+                          (swap! acc conj
+                                 (if (= type ::prepl/ret)
+                                   (assoc res ::val
+                                          (binding [*out* (java.io.StringWriter.)]
+                                            ((resolve-fn printer) val)
+                                            (.toString *out*)))
+                                   res)))
                         :ns namespace)
                  (map-indexed (fn [idx pair]
                                 (let [results (filter #(= (:form-id %) idx) @acc)
                                       ret (first (filter #(= (:type %) ::prepl/ret) results))]
-                                  (assoc pair :results (vec results))))
+                                  (assoc pair
+                                         :results (vec results)
+                                         :namespace (:ns ret))))
                               pairs)))))))
+
+(defn render-session
+  "Given a parsed (and evaluated) session structure, render it to Hiccup."
+  [{:keys [pairs] :as session}]
+  (prn session)
+  [:div {:class "session highlight"}
+   (for [{:keys [comment input results namespace]} pairs]
+     (list
+      (when comment
+        [:pre.comment comment])
+      [:pre.readline
+       [:span.namespace.nf namespace]
+       [:span.prompt "=>"]
+       [:span.input (pygmentize "clj" input)]]
+      (for [{:keys [type stream]
+             bare-val :val
+             formatted-val ::val} results]
+        [:div {:class (cond (= type ::prepl/stream) (name stream)
+                            (= type ::prepl/ret) "ret")}
+         (let [val (or formatted-val bare-val)]
+           [:pre
+            (if (= type ::prepl/ret)
+              (pygmentize "clj" val)
+              val)])])))])

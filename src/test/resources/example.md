@@ -4,8 +4,8 @@
 ---
 {:namespace user
  :dependencies [[org.clojure/clojure "1.0.0"]]
- :session "primordial"
-}
+ :session "primordial"}
+---
 user> (def foo 3)
 #'user/foo
 ```

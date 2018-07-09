@@ -15,7 +15,8 @@ This is very much a work in progress, but some things work.
 
 ```clj+session {render=true}
 ---
-{:eval true}
+{:namespace stacks.tools.projects
+ :eval true}
 ---
 stacks.doctree> (def *options (normalize-options default-options))
 stacks.doctree> *options

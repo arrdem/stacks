@@ -9,7 +9,8 @@
             [clojure.string :as str]
             [detritus.update :refer [deep-merge]]
             [commonmark-hiccup.core :as mark]
-            [me.raynes.conch :refer [let-programs]])
+            [me.raynes.conch :refer [let-programs]]
+            [clojure.walk :refer [postwalk prewalk]])
   (:import [org.commonmark.node
             ,,FencedCodeBlock
             ,,Heading]))
@@ -65,55 +66,26 @@
       [(.group matcher "heading") (parse-kramdown-attrs (.group matcher "attrs"))]
       [heading {}])))
 
-(defn handle-default [tag attrs raw]
+(defn handle-parse-block
+  "Default handler for fenced code blocks.
+
+  Users should ensure this is the root of any handler middleware stack."
+  [tag attrs raw]
   {:type ::code
    :tag tag
    :attrs attrs
    :raw raw})
 
-(defn handle-pygmentize
-  "Handle most code blocks by pygmentizing the content."
-  [tag attrs raw]
-  (if (Boolean/parseBoolean (get attrs :highlight "true"))
-    (let-programs [pygmentize "pygmentize"]
-      (pygmentize "-fhtml"
-                  (str "-l" tag)
-                  "-Ostripnl=False,encoding=utf-8"
-                  {:in raw}))
-    (handle-default tag attrs raw)))
+(defn handle-render-block
+  "Default handler for rendering fenced code blocks.
 
-(defn pygments-lexers []
-  (let-programs [pygmentize "pygmentize"]
-    (->> (pygmentize "-L" "lexers")
-         (re-seq #"(?sm)^\* (((, )?[^:,\s]+)+):")
-         (mapcat (fn [[_text names]]
-                   (str/split names #", "))))))
-
-(defn handle-graphviz
-  "Handle graphviz by compiling it ... to inline image data I guess?
-
-  Unless render=false."
-  [tag attrs raw]
-  (if (Boolean/parseBoolean (get attrs :render "false"))
-    (let-programs [graphviz "dot"]
-      [:div {:class #{"highlight"}}
-       (graphviz "-Tsvg"
-                 {:in raw})])
-    (handle-default tag attrs raw)))
-
-(defn handle-session [tag attrs raw]
-  (if (Boolean/parseBoolean (get attrs :render "false"))
-    (do (require 'stacks.tools.sessions)
-        (as-> raw %
-          ((resolve 'stacks.tools.sessions/parse-session) %)
-          ((resolve 'stacks.tools.sessions/render-session) %)))
-    (handle-default tag attrs raw)))
-
-(defn handle-doctest [tag attrs raw]
-  (if (Boolean/parseBoolean (get attrs :render "false"))
-    (do (require 'stacks.tools.doctests)
-        ((resolve 'stacks.tools.doctests/parse-doctests) raw))
-    (handle-default tag attrs raw)))
+  Just emits a `[:pre [:code ...]]`."
+  [{:keys [type raw] :as node}]
+  (if (= type ::code)
+    [:pre {}
+     [:code {}
+      raw]]
+    node))
 
 (defn parse-code-block
   "Takes a FencedCodeBlock instance, and returns a `::code` tagged structure with the contents.
@@ -140,12 +112,10 @@
   product from the text - for instance an SVG image.
 
   [1] https://kramdown.gettalong.org/syntax.html#specifying-a-header-id"
-  [handlers ^FencedCodeBlock block]
+  [handler-middleware ^FencedCodeBlock block]
   (let [[tag attrs] (parse-kramdown-suffix (.getInfo block))
-        raw (.getLiteral block)
-        handler (get handlers tag (get handlers ::default-handler))]
-
-    (handler tag attrs raw)))
+        raw (.getLiteral block)]
+    (handler-middleware tag attrs raw)))
 
 (defn munge-heading
   "Munge a heading (h1 h2 etc.) to a string that could be used as an ID."
@@ -235,7 +205,7 @@
      tree)
     @acc))
 
-(defn parse-article
+(defn parse-article*
   "Takes a location and a buffer read from that location. Produces an `::article`.
 
   Articles are tagged unions, having `:source` being where the source
@@ -251,45 +221,35 @@
      :references (collect-references content)
      :content    content}))
 
-(def +default-handlers+
-  (-> {"clj+session" handle-session
-       "clj+doctest" handle-doctest
-       "dot" handle-graphviz
-       ::default-handler handle-default}
-      (as-> % 
-        (reduce #(assoc %1 %2 handle-pygmentize)
-                % (pygments-lexers))
-        ;; FIXME: Pygments doesn't support cljc
-        (if-not (get % "cljc")
-          (assoc % "cljc" (get % "clj"))
-          %))))
-
-(defn markdown->article
+(defn parse-article
   "Takes a file path, resource path, File instance or raw buffer and parses it to an `::article`."
-  ([resource-file-or-buffer]
-   (markdown->article +default-handlers+
-                      resource-file-or-buffer))
-  ([handlers resource-file-or-buffer]
-   (or (when (instance? java.io.File resource-file-or-buffer)
-         (parse-article handlers
+  [parser-middleware resource-file-or-buffer]
+  (or (when (instance? java.io.File resource-file-or-buffer)
+        (parse-article* parser-middleware
                         (io/as-url resource-file-or-buffer)
                         (slurp resource-file-or-buffer)))
 
-       (let [f (io/file resource-file-or-buffer)]
-         (when (.exists f)
-           ;; Can't recur from here >.>
-           (markdown->article handlers f)))
+      (let [f (io/file resource-file-or-buffer)]
+        (when (.exists f)
+          ;; Can't recur from here >.>
+          (parse-article parser-middleware f)))
 
-       (if-let [r (io/resource resource-file-or-buffer)]
-         (parse-article handlers
+      (if-let [r (io/resource resource-file-or-buffer)]
+        (parse-article* parser-middleware
                         (io/as-url r)
                         (slurp r)))
 
-       (when (string? resource-file-or-buffer)
-         (parse-article handlers
+      (when (string? resource-file-or-buffer)
+        (parse-article* parser-middleware
                         (str "NO SOURCE AVAILABLE")
                         resource-file-or-buffer))
 
-       (throw
-        (IllegalArgumentException.
-         "Don't know what I got but couldn't convert it to a buffer for parsing!")))))
+      (throw
+       (IllegalArgumentException.
+        "Don't know what I got but couldn't convert it to a buffer for parsing!"))))
+
+(defn render-article
+  "Given a full `::article` structure, use the given handlers stack to
+  render its content."
+  [render-middleware article]
+  (postwalk-tagged #(render-middleware %) (:content article)))
