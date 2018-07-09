@@ -5,7 +5,7 @@
              :refer [doc]]
             [stacks.tools.articles
              :as a
-             :refer [parse-article tagged-union?]]
+             :refer [handle-parse-block parse-article* tagged-union?]]
             [stacks.tools.doctests
              :refer [parse-doctests compile-doctests default-profile]]
             [detritus :refer [name namespace]]
@@ -20,7 +20,7 @@
 (defn chain
   "Compose for 0-arity test functions.
 
-  ```clj/doctest
+  ```clj+doctest
   >> (chain #(println \"foo\"))
   => (fn? %)
   => (nil? (%))
@@ -79,22 +79,21 @@
            [_name var] vars
            :let        [doc? (some-> var doc :text normalize-lines)]
            :when       doc?]
-     (let [{:keys [content]
-            :as   article} (parse-article (var-uri var) doc?)]
+     (let [doctests (volatile! [])
+           _ (parse-article* (fn [tag attrs raw]
+                               (when (= tag "clj+doctest")
+                                 (vswap! doctests conj (-parse-doctest a-ns raw)))
+                               (handle-parse-block tag attrs raw))
+                             (var-uri var)
+                             doc?)]
        (try
-         (let [doctests    (some->> content
-                                    (keep #(when (and (tagged-union? %)
-                                                      (= (:type %) ::a/code)
-                                                      (#{"clj/doctest"} (:tag %)))
-                                             (:content %)))
-                                    (keep (partial -parse-doctest a-ns)))
-               doctest-fns (keep compile-doctests doctests)]
+         (let [doctest-fns (keep compile-doctests @doctests)]
            (when (not-empty doctest-fns)
              (alter-meta! var update :test (partial apply chain) doctest-fns)
              (binding [*out* *err*]
                (printf "Installed doctests on %s\n" var))))
          (catch Exception e
            (ex-info (format "Failed to install doctests on var %s" var)
-                    {:content content
+                    {:content @doctests
                      :var     var
                      :ns      a-ns})))))))

@@ -47,7 +47,7 @@
 
   Doctests accept all the same profile options as sessions, as well as
   some new ones.
-  
+
   Doctests have not one prompt option but three:
    - `:eval-prompt`, precedes an evaluation form (default `>>`)
    - `:is-prompt`, precedes an `#'clojure.test/is` assertion (default `=>`)
@@ -57,7 +57,7 @@
   value of the last eval form to. This allows is and conforms
   assertions to reference the previous value explicitly.
 
-  ```clj/doctest
+  ```clj+doctest
   ---
   {:namespace stacks.tools.doctests}
   ---
