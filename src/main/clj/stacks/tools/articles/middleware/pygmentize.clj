@@ -4,7 +4,7 @@
             [stacks.tools.pygments :refer [lexers pygmentize]]))
 
 (defonce +known-lexers+
-  (delay (set (pygments-lexers))))
+  (delay (set (lexers))))
 
 (defn handle-render-pygmentize
   "Article middleware.
