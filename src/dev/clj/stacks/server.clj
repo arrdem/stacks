@@ -4,15 +4,23 @@
   Lots of cribbing from Grimoire here. Surprise."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
-  (:require [compojure.core :refer [defroutes GET]]
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]
+
+            [compojure.core :refer [defroutes GET]]
             [compojure.handler :as handler]
             [ring.adapter.jetty :as jetty]
-            [cheshire.core :refer [encode]]
             [hiccup.core :refer [html]]
             [hiccup.page :as page]
+
+            ;; Ring stuff
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.session :refer [wrap-session]]
-            [clojure.java.io :as io]
+            [ring.middleware.file :refer [wrap-file]]
+            [ring.util.response :refer [redirect]]
+
+            [stacks.tools.pygments :refer [pygmentize-file]]
+
             ;; Articles, Article handlers
             [stacks.tools.articles :as articles
              :refer [handle-parse-block handle-render-block]]
@@ -36,19 +44,43 @@
       handle-render-pygmentize
       handle-render-graphviz))
 
+(def +file-ext-pattern+
+  #"\.[\w\d]*?$")
+
+(defn layout [content]
+  (html
+   [:head
+    (page/include-css "/css/articles/default.css")
+    (page/include-css "/css/pygments/default.css")
+    #_(page/include-css "/css/pygments/codeschool.css")]
+   [:body#body
+    [:div.sidebar
+     ]
+    [:div.content
+     content]]
+   [:foot
+    ]))
+
 (defroutes app
   (GET "/" []
-    (io/resource "_html/index.html"))
+    (redirect "/article/README"))
+
+  (GET "/doc/:file" [file]
+    (redirect (str "/article/" (str/replace file +file-ext-pattern+ ""))))
+
   (GET "/article/:article" [article]
-    (as-> (io/file (str "doc/" article ".md")) %
+    (as-> (or (let [f (io/file (str article ".md"))]
+                (if (.exists f) f))
+              (let [f (io/file (str "doc/" article ".md"))]
+                (if (.exists f) f))) %
       (articles/parse-article +article-parsing-middleware+ %)
       (articles/render-article +article-rendering-middleware+ %)
-      (html
-       [:head
-        (page/include-css "/css/articles/default.css")
-        (page/include-css "/css/pygments/default.css")
-        #_(page/include-css "/css/pygments/codeschool.css")]
-       [:body %]))))
+      (layout %)))
+
+  (GET "/:path{.*}" [path]
+    (let [f (io/file path)]
+      (if (.exists f)
+        (layout (pygmentize-file f))))))
 
 (defonce +server+
   (atom nil))
