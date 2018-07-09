@@ -39,9 +39,10 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
 {:namespace user
  :eval true}
 ---
-> (stacks.tools.articles/parse-article
-   stacks.tools.articles/handle-parse-block
-   (clojure.java.io/resource "example.md"))
+> (require '[stacks.tools.articles :refer [parse-article handle-parse-block]])
+> (require '[clojure.java.io :as io])
+> (parse-article handle-parse-block
+   (io/resource "example.md"))
 ```
 
 ## Embedded content
