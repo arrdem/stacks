@@ -37,7 +37,7 @@ This project is an effort to explore writing a documentation tool somewhat in th
 
 ## Usage
 
-Stacks isn't yet ready for use, but features a prototype server - [stacks.server](src/dev/stacks/server.clj) - which features full support for articles and sessions as they are currently implemented.
+Stacks isn't yet ready for use, but features a prototype server - [stacks.server](src/dev/stacks/server.clj) - which supports articles and sessions as they are currently implemented.
 It's designed to serve Stacks' own documentation, and used to develop the system.
 With some legwork it could probably be adapted to fit your needs, but I haven't packaged it more generally yet.
 
