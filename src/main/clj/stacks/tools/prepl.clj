@@ -73,21 +73,19 @@
                                          :form-id current-form-id})
                                 true)))
                           (catch Throwable ex
+                            (set! *e ex)
                             (out-fn {:type ::ret
                                      :val (Throwable->map ex)
                                      :ns (str (.name *ns*))
                                      :form s
                                      :form-id current-form-id})
-                            (prn ex)
-                            (set! *e ex)
                             true)))
                       (catch Throwable ex
+                        (set! *e ex)
                         (out-fn {:type ::ret
                                  :val (Throwable->map ex)
                                  :ns (str (.name *ns*))
                                  :form-id current-form-id})
-                        (prn ex)
-                        (set! *e ex)
                         true))
                 (vswap! form-id inc)
                 (recur))))
