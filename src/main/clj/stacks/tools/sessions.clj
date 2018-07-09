@@ -108,6 +108,9 @@
    buffer]
   (map parse-pair-match (re-seq (make-pair-pattern prompt) buffer)))
 
+(defonce +session-registry+
+  (atom {}))
+
 (defn parse-session
   "Parses a session, returning a datastructure representing the session.
 
@@ -133,7 +136,19 @@
          example-profile            (if kvs (read-string kvs) {})
          ;; FIXME (arrdem 2017-12-10):
          ;;   merge profiles in some remotely sane way.
-         profile                    (merge profile example-profile)]
+         profile                    (merge profile example-profile)
+         ;; Intern (or load) the session's profile so others can refer to it
+         profile (if-let [session (:session profile)]
+                   (locking +session-registry+
+                     (if (contains? @+session-registry+ session)
+                       ;; default - load
+                       (get @+session-registry+ session)
+                       ;; store
+                       (do (swap! +session-registry+
+                                  assoc session profile)
+                           profile)))
+                   profile)]
+
      {:type    ::session
       :profile profile
       :pairs   (parse-pairs profile body)})))
@@ -162,8 +177,7 @@
                          (:evaluate session)
                          (:eval session))
                ;; Users can opt out, it's off by default
-               (do (println "Not evaluating session " session)
-                   pairs)
+               pairs
 
                ;; If the user wants us to eval the session...
                (let [acc (atom [])]
@@ -190,23 +204,24 @@
 (defn render-session
   "Given a parsed (and evaluated) session structure, render it to Hiccup."
   [{:keys [pairs] :as session}]
-  (prn session)
   [:div {:class "session highlight"}
-   (for [{:keys [comment input results namespace]} pairs]
-     (list
+   (for [{:keys [comment input results namespace]} pairs
+         :when (not (empty? input))] ;; Empty inputs missbehave :/
+     [:div.pair
       (when comment
         [:pre.comment comment])
       [:pre.readline
        [:span.namespace.nf namespace]
        [:span.prompt "=>"]
-       [:span.input (pygmentize "clj" input)]]
-      (for [{:keys [type stream]
-             bare-val :val
-             formatted-val ::val} results]
-        [:div {:class (cond (= type ::prepl/stream) (name stream)
-                            (= type ::prepl/ret) "ret")}
-         (let [val (or formatted-val bare-val)]
-           [:pre
-            (if (= type ::prepl/ret)
-              (pygmentize "clj" val)
-              val)])])))])
+       [:span.input (str/trim (pygmentize "clj" input))]]
+      [:div.results
+       (for [{:keys [type stream]
+              bare-val :val
+              formatted-val ::val} results]
+         [:pre {:class (cond (= type ::prepl/stream) (name stream)
+                             (= type ::prepl/ret) "ret")}
+          (let [val (or formatted-val bare-val)]
+            (str/trim
+             (if (= type ::prepl/ret)
+               (pygmentize "clj" val)
+               val)))])]])])
