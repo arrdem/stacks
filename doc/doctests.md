@@ -30,17 +30,15 @@ Just like sessions, input forms may be followed output and other text before the
 
 Doctests can be parsed to a data structure using `stacks.tools.docttests`
 
-```clj+session {render=true}
+```clj+session
 ---
-{:namespace user
- :session "doctests-demo"
- :eval true
- :pprint clojure.pprint/pprint}
+{:session "doctests-demo"
+ :eval true}
 ---
 > (require '[clojure.java.io :as io])
 > (require '[stacks.tools.doctests :refer [parse-doctests]])
-> (parse-doctests (slurp (io/resource "example.doctest")))
->
+> (def *doctests (parse-doctests (slurp (io/resource "example.doctest"))))
+> *doctests
 ```
 
 ## Demo: Doctest execution
@@ -49,13 +47,13 @@ Doctests as data are well and good, but they can also be compiled to test functi
 
 Continuing the example from above,
 
-```clj+session {render=true}
+```clj+session
 ---
 {:session "doctests-demo"}
 ---
 > (require '[stacks.tools.doctests :refer [compile-doctests]])
 ;; The doctest structure from above is *2
-> (compile-doctests *2)
+> (compile-doctests *doctests)
 ;; Run the compiled doctest function
 > (*1)
 true
@@ -63,32 +61,20 @@ true
 ```
 
 The intent of doctests is that they can be embedded in docstrings.
-For instance one could define a function `abs` as such
+For instance one could define a function `double` as such:
 
-    (defn abs
-      "Return the absolute value of number `x`.
-
-      Works with all numbers supported by the runtime
-      and correctly handles integer overflow, unike `Math/abs`.
-
-      ```clj+doctest
-      >> (abs -3)
-      => 3
-
-      >> (abs -3/5)
-      => 3/5
-
-      >> (abs -3.5)
-      => 3.5
-
-      >> (abs Integer/MIN_VALUE)
-      => 2147483648
-      ```
-      "
-      {:attribution "weavejester/medley"
-       :added "0.1"}
-      [x]
-      (if (neg? x) (- x) x))
+```clj
+(defn double
+   "A function which doubles
+   ```clj+doctest
+   >> (double 2)
+   => (= % 4)
+   >> (double 8)
+   => (= % 16)
+   ```"
+   [x]
+   (* x 2))
+```
 
 ## Demo: Doctest runner
 
@@ -97,13 +83,14 @@ Doctests can be searched for and installed for use by the standard `clojure.test
 `clojure.test` recognizes the `^:test` value of any var as a test, so this just searches for doctests, compiles and installs them.
 Installing doctests does not overwrite existing `^:test` fns, doctests are chained with other test drivers.
 
-```clj+session {render=true}
+```clj+session
 ---
 {:session "doctests-demo"}
 ---
+;; Define our double function from above
 > (defn double
      "A function which doubles
-     ```clj/doctest
+     ```clj+doctest
      >> (double 2)
      => (= % 4)
      >> (double 8)
@@ -112,7 +99,8 @@ Installing doctests does not overwrite existing `^:test` fns, doctests are chain
      [x]
      (* x 2))
 ;; Install tests only against the user namespace
-> (stacks.tools.doctest-runner/install-doctests! [#"user"])
+> (require '[stacks.tools.doctest-runner :refer [install-doctests!]])
+> (install-doctests! [#"user"])
 ;; Use the normal clojure.test runner
 > (clojure.test/run-tests)
 >
