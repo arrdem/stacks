@@ -16,8 +16,10 @@ This is very much a work in progress, but some things work.
 ```clj+session {render=true}
 ---
 {:namespace stacks.tools.projects
- :eval true}
+ :eval false}
 ---
+;; Note, this example needs to be completely rewritten
+;; To save you from looking at stacktraces, eval is disabled atm
 stacks.doctree> (def *options (normalize-options default-options))
 stacks.doctree> *options
 stacks.doctree> (def *project

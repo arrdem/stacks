@@ -9,8 +9,7 @@ Once documentation is in a rich data form, applying syntax highlighting and IDE-
 Furthermore, the documentation itself becomes somewhat decoupled from its final rendering.
 
 ### Demo: Article parsing
-
-[**example.md**](/src/test/resources/example.md)
+Take for example [**example.md**](/src/test/resources/example.md) from the test suite - included literally here.
 
     # Primordial Clojure {#primordial}
 
@@ -33,6 +32,9 @@ Furthermore, the documentation itself becomes somewhat decoupled from its final 
     user> (+ foo 3)
     6
     ```
+
+If we run that text through the article parser, we get back a datastructure consisting of the union of a Hiccup tag tree with some other structures, representing the sessions in the text.
+See the [Sessions](/doc/sessions.md) for more on what sessions can do.
 
 ```clj+session
 ---
@@ -69,7 +71,7 @@ This provides a native alternative to traditional Makefile based workflows for c
 
 For instance, Shelving has a middelware for GraphViz (which happens to not have a Pygments language yet) which does full rendering to inline SVG.
 
-```dot {render=true}
+```dot
 digraph foo {
   a -> b;
 }
