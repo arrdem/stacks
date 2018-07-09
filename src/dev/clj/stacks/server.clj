@@ -82,6 +82,11 @@
       (if (.exists f)
         (layout (pygmentize-file f))))))
 
+(defn log-requests [handler]
+  (fn [request]
+    (prn (select-keys request [:request-method :uri :remote-addr :query-string]))
+    (handler request)))
+
 (defonce +server+
   (atom nil))
 
@@ -91,6 +96,7 @@
                    :join? false}
         jetty     (-> app
                       handler/site
+                      log-requests
                       wrap-session
                       (wrap-resource "_static")
                       (jetty/run-jetty jetty-cfg))]
