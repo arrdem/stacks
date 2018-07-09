@@ -1,20 +1,29 @@
 .session {
-    .readline {
-        margin-bottom: 0.5em;
-        
-        .namespace, .prompt, .input {
-            float: left;
+    .pair {
+        padding-bottom: 0.5em;
+
+        .readline {
+            margin-bottom: 0.5em;
+
+            .namespace, .prompt, .input {
+                float: left;
+            }
+
+            .namespace, .prompt {
+                padding-right: 0.5em;
+            }
+
+            .input .highlight pre {
+                margin: 0px;
+            }
         }
 
-        .namespace, .prompt {
-            padding-right: 0.5em;
+        .results, .comment, .out, .err, .ret {
+            clear: both;
         }
 
-        .input .highlight pre {
+        pre {
             margin: 0px;
         }
-    }
-    .out, .err, .ret {
-        clear: both;
     }
 }

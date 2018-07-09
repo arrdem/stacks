@@ -1,20 +1,28 @@
-.session .readline {
+.session .pair {
+  padding-bottom: 0.5em;
+}
+.session .pair .readline {
   margin-bottom: 0.5em;
 }
-.session .readline .namespace,
-.session .readline .prompt,
-.session .readline .input {
+.session .pair .readline .namespace,
+.session .pair .readline .prompt,
+.session .pair .readline .input {
   float: left;
 }
-.session .readline .namespace,
-.session .readline .prompt {
+.session .pair .readline .namespace,
+.session .pair .readline .prompt {
   padding-right: 0.5em;
 }
-.session .readline .input .highlight pre {
+.session .pair .readline .input .highlight pre {
   margin: 0px;
 }
-.session .out,
-.session .err,
-.session .ret {
+.session .pair .results,
+.session .pair .comment,
+.session .pair .out,
+.session .pair .err,
+.session .pair .ret {
   clear: both;
+}
+.session .pair pre {
+  margin: 0px;
 }
