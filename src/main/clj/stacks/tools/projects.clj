@@ -20,7 +20,7 @@
 
 (set! *warn-on-reflection* true)
 
-(def default-options
+(def +default-options+
   {:doc-extensions     #{".md" ".markdown"}
    :source-extensions  #{".clj" ".cljc"}
    :session-extensions #{".repl"}
@@ -128,11 +128,9 @@
            (find-docs options project cache)
            (find-sessions options project cache))))
 
-;; FIXME (arrdem 2017-12-23):
-;;   Ran out of time on the flight.
-(declare index-docs index-sessions)
-
-(defn index-sources [options project project-files]
+(defn index-sources
+  "Index source files in the project, returning a new partial index."
+  [options project project-files]
   (let [{:keys [platform]
          :or   {platform 'clj}} project
         {:keys [sources]}       project-files]
@@ -160,14 +158,30 @@
             :url       url})
          sources)))
 
+(defn index-docs
+  "Index documents (markdown) in the project, returning a new partial index."
+  [{:keys [parse-article-middleware]
+    :or   {parse-article-middleware articles/handle-parse-block}}
+   project
+   project-files]
+  (let [{:keys [docs]} project-files]
+    (map (fn [url]
+           {:type    ::file
+            :content (articles/parse-article parse-article-middleware url)
+            :url     url})
+         docs)))
+
+(defn index-sessions [options project project-files]
+{})
+
 (defn index-project
   "Given Options, a Leiningen project and the files comprising that
   project analyzes & indexes them for rendering."
   [options project project-files]
-  (merge {:type ::index}
-         (index-sources options project project-files)
-         (index-docs options project project-files)
-         (index-sessions options project project-files)))
+  {:type     ::index
+   :sources  (index-sources options project project-files)
+   :docs     (index-docs options project project-files)
+   :sessions (index-sessions options project project-files)})
 
 (defn project->doctree
   "Options, Leiningen project -> doctree structure which can be compiled, tested or checked.
@@ -179,3 +193,15 @@
   (let [options       (normalize-options options)
         project-files (find-files options project)]
     (index-project options project project-files)))
+
+(comment
+  ;; Test of all the above
+  (project->doctree
+   +default-options+
+   {:source-paths ["src/main/clj"
+                   "src/main/cljc"
+                   "src/dev/clj"
+                   "src/dev/cljc"]
+    :test-paths ["src/test/clj"
+                 "src/test/cljc"]
+    :doc-paths ["doc/"]}))

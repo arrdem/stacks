@@ -36,13 +36,17 @@
 
 (def +article-parsing-middleware+
   (-> handle-parse-block
-      handle-parse-sessions))
+      handle-parse-sessions
+      #_handle-parse-var-links
+      #_handle-parse-spec-links))
 
 (def +article-rendering-middleware+
   (-> handle-render-block
       handle-render-sessions
       handle-render-pygmentize
-      handle-render-graphviz))
+      handle-render-graphviz
+      #_handle-render-var-links
+      #_handle-render-spec-links))
 
 (def +file-ext-pattern+
   #"\.[\w\d]*?$")

@@ -130,10 +130,11 @@
 
 (defn ns-add-statement [ns-record [form & tail :as expr]]
   (case form
-    (:use)       (parse-use ns-record tail)
-    (:require)   (parse-require ns-record tail)
-    (:import)    (parse-import ns-record tail)
-    (:gen-class) (parse-gen ns-record tail)))
+    (:use)           (parse-use ns-record tail)
+    (:require)       (parse-require ns-record tail)
+    (:import)        (parse-import ns-record tail)
+    (:gen-class)     (parse-gen ns-record tail)
+    (:refer-clojure) ns-record))
 
 (defn parse-ns-form [form]
   (let [[_ns_sym form]    (take-when #(= 'ns %) nil form)

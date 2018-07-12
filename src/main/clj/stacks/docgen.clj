@@ -40,29 +40,6 @@
 (defn var-key [^clojure.lang.Var var]
   (format "%s/%s" (.name (.ns var)) (.sym var)))
 
-(defn strip-leading-space
-  "Docstrings are hard to format in part because sometimes they have a
-  whole lot of leading whitespace.
-
-  This function tries to take an arbitrary docstring and chomp off the
-  minimum amount of COMMON whitespace from every line."
-  [docstring]
-  (as-> docstring %
-    ;; Delete any leading whitespace and newlines
-    (str/replace % #"\A[\s\n\r]+" "")
-    (str/split-lines %)
-    (rest %) ;; First line is always different
-    ;; Count leading whitespace
-    (keep (fn [l]
-            (if-let [match (re-find #"^\s+" l)]
-              (count match)))
-          %)
-    ;; Common is the minimal leading substring
-    (apply min 1000 %)
-    (format "(?ms)^[\\s&&[^\n\r]]{%s}" %)
-    (re-pattern %)
-    (str/replace docstring % "")))
-
 (defn document-var [^clojure.lang.Var v ^File doc-file heading links-map]
   (binding [*ns* (.ns v)]
     (let [{:keys [categories arglists doc stability line file]
