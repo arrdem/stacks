@@ -13,22 +13,24 @@ Consequently, stacks should have a story for operating as a Leiningen plugin, or
 
 This is very much a work in progress, but some things work.
 
-```clj+session {render=true}
+```clj+session
 ---
 {:namespace stacks.tools.projects
- :eval false}
+ :eval true}
 ---
-;; Note, this example needs to be completely rewritten
-;; To save you from looking at stacktraces, eval is disabled atm
-stacks.doctree> (def *options (normalize-options default-options))
-stacks.doctree> *options
-stacks.doctree> (def *project
-                  "A leiningen style project map with source paths,
-                   also accepts doc paths and session paths."
-                  {:source-paths ["src/" "test/"],
-                   :doc-paths ["."]})
-stacks.doctree> (def *files
-                  (find-files *options *project))
-stacks.doctree> *files
-stacks.doctree> (index-sources *options *project *files)
+> (set! *print-length* 3)
+> (project->doctree
+   +default-options+
+   {:source-paths ["src/main/clj"
+                   "src/main/cljc"
+                   "src/dev/clj"
+                   "src/dev/cljc"]
+    :test-paths ["src/test/clj"
+                 "src/test/cljc"]
+    :doc-paths ["doc"]})
 ```
+
+The idea here is that a whole project can be slurped, indexed and compiled into something I'm calling a doctree.
+The doctree of a project encompasses all the content, and critically all the addressable "entities".
+This allows Stacks at least in theory to be used as a static site generator.
+By emitting a static mapping of files (and addressable entities) to URLs,

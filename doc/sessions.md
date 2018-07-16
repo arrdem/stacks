@@ -27,9 +27,6 @@ The namespace context in which reading and evaluation occurs may also be specifi
 
 [**example.repl**](/src/test/resources/example.repl):
 ```
----
-{:namespace user}
----
 user> (+ 1 1)
 1
 user> (conj #{:foo :bar} :baz)

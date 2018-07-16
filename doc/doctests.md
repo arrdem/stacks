@@ -5,6 +5,9 @@
 Documentation lives close to the definitions of our functions and so too should the tests.
 Some subset of our tests are "interesting" and could be illustrative as examples, so what if we were to put examples in our documentation and also extract them as tests to keep them from going stale?
 
+### Demo: doctest parsing
+Take for example [**example.doctest**](/src/test/resources/example.doctest) from the test suite - included literally here.
+
     ---
     {:namespace user
      :as "%"}
@@ -16,13 +19,13 @@ Some subset of our tests are "interesting" and could be illustrative as examples
     >> (inc 3/2)
     => (= % 5/2)
 
-Much like [Sessions](/doc/sessions.md), doctests consist of an optional EDN header followed by a sequence of forms.
+Much like [Sessions](/doc/sessions.md), a doctest block consists of an optional EDN header followed by a sequence of forms.
 Unlike sessions which are presumed to only have one "prompt", doctests have three.
 
-* The `>>` prompt (or the `:eval-prompt` option as an option or in the EDN header) is used to denote forms which should be evaluated.
+* The `>>` prompt (or the `:eval-prompt` option) is used to denote forms which should be evaluated.
 The value of the last evaluated form is bound to `%` (or the `:as` option).
-* The `=>` prompt (or the `:is-prompt`) is used to denote forms which should be `clojure.test/is` assertions.
-* The `:>` prompt (or the `:valid-prompt`) is used to denote forms which should be `clojure.spec(.alpha)/valid?` assertions.
+* The `=>` prompt (or the `:is-prompt` option) is used to denote forms which should be `clojure.test/is` assertions.
+* The `:>` prompt (or the `:valid-prompt` option) is used to denote forms which should be `clojure.spec(.alpha)/valid?` assertions.
 
 Just like sessions, input forms may be followed output and other text before the next prompt.
 
@@ -37,8 +40,7 @@ Doctests can be parsed to a data structure using `stacks.tools.docttests`
 ---
 > (require '[clojure.java.io :as io])
 > (require '[stacks.tools.doctests :refer [parse-doctests]])
-> (def *doctests (parse-doctests (slurp (io/resource "example.doctest"))))
-> *doctests
+> (parse-doctests (slurp (io/resource "example.doctest")))
 ```
 
 ## Demo: Doctest execution
@@ -53,11 +55,10 @@ Continuing the example from above,
 ---
 > (require '[stacks.tools.doctests :refer [compile-doctests]])
 ;; The doctest structure from above is *2
-> (compile-doctests *doctests)
+> (compile-doctests *2)
 ;; Run the compiled doctest function
 > (*1)
 true
->
 ```
 
 The intent of doctests is that they can be embedded in docstrings.
@@ -103,7 +104,6 @@ Installing doctests does not overwrite existing `^:test` fns, doctests are chain
 > (install-doctests! [#"user"])
 ;; Use the normal clojure.test runner
 > (clojure.test/run-tests)
->
 ```
 
 By default, the doctest runner searches for and installs all tests.
