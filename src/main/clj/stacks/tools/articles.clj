@@ -234,7 +234,9 @@
           ;; Can't recur from here >.>
           (parse-article parser-middleware f)))
 
-      (if-let [r (io/resource resource-file-or-buffer)]
+      (if-let [r (or (when (instance? java.net.URI resource-file-or-buffer)
+                       resource-file-or-buffer)
+                     (io/resource resource-file-or-buffer))]
         (parse-article* parser-middleware
                         (io/as-url r)
                         (slurp r)))

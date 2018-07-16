@@ -60,7 +60,7 @@
           "(?<comment>[\\s&&[^\n\r]]*;[^\n]*?\n)*?"
           ;; - Match any text preceding the prompt pattern and assume it's the namespace
           ;; - Then match  the prompt
-          "(^(?<namespace>[^\n\r]*?)(?<prompt>%1$s))"
+          "(^(?<namespace>[^\n\r\\s]*?)(?<prompt>%1$s))"
           ;; - Match (but do not capture!) whitespace greedily
           "(?:\\s*+)"
           ;; - Match a bunch of text lazily, being the input form & trailing results.
@@ -68,7 +68,7 @@
           ;; - Match either:
           ;;   - The end of file
           ;;   - (without capturing) a prompt, or subsequent comment
-          "((?=(^[^\n\r]*?%1$s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)")
+          "((?=(^[^\n\r\\s]*?%1$s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)")
          p)
         (re-pattern))))
 
