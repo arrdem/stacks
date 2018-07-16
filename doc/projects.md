@@ -18,16 +18,18 @@ This is very much a work in progress, but some things work.
 {:namespace stacks.tools.projects
  :eval true}
 ---
-> (set! *print-length* 3)
-> (project->doctree
-   +default-options+
-   {:source-paths ["src/main/clj"
-                   "src/main/cljc"
-                   "src/dev/clj"
-                   "src/dev/cljc"]
-    :test-paths ["src/test/clj"
-                 "src/test/cljc"]
-    :doc-paths ["doc"]})
+> (def *doctree
+   (project->doctree
+     +default-options+
+     {:source-paths ["src/main/clj"
+                     "src/main/cljc"
+                     "src/dev/clj"
+                     "src/dev/cljc"]
+      :test-paths ["src/test/clj"
+                   "src/test/cljc"]
+      :doc-paths ["doc"]}))
+;; Even for small projects, the doctree is /huge/
+> (count (pr-str *doctree))
 ```
 
 The idea here is that a whole project can be slurped, indexed and compiled into something I'm calling a doctree.

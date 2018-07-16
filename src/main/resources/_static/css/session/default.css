@@ -1,6 +1,6 @@
-div.session .highlight {
-  text-overflow: ellipsis;
+div.session {
   overflow: hidden;
-  white-space: nowrap;
-  width: 60em;
+}
+div.session .namespace {
+  clear: right;
 }
