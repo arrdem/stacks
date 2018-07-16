@@ -54,12 +54,14 @@
 (defn layout [content]
   (html
    [:head
+    (page/include-css "/css/default.css")
     (page/include-css "/css/articles/default.css")
+    (page/include-css "/css/session/default.css")
     (page/include-css "/css/pygments/default.css")
     #_(page/include-css "/css/pygments/codeschool.css")]
    [:body#body
     [:div.sidebar
-     ]
+     "bottom text"]
     [:div.content
      content]]
    [:foot

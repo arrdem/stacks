@@ -1,0 +1,6 @@
+div.session .highlight {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 60em;
+}
