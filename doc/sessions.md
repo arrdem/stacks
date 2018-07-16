@@ -15,7 +15,7 @@ Syntax highlighting the evaluated form in its evaluation environment may be valu
 Likewise syntax highlighting the result of evaluation may be valuable.
 Perhaps other printed output has some interpretation that's worth formatting.
 
-By using the input prompt as a delimiter, and understanding that `clojure.core/read` is an authoritative with regards to what constitutes the input form following the prompt, we can at least recover the prompt and the result(s) of evaluation.
+By using the input prompt as a delimiter, and understanding that `clojure.core/read` is an authoritative on what constitutes the input form following the prompt, we can at least recover the prompt and the result(s) of evaluation.
 Determining what of the output is last and the result is more difficult, but possible.
 
 Stacks provides support for parsing sessions, for which I shall use the file extension `.repl`.
@@ -28,10 +28,7 @@ The namespace context in which reading and evaluation occurs may also be specifi
 [**example.repl**](/src/test/resources/example.repl):
 ```
 ---
-{:namespace    user
- :dependencies [[org.clojure/clojure "1.8.0"]]
- :prompt       "user>"
-}
+{:namespace user}
 ---
 user> (+ 1 1)
 1
@@ -51,8 +48,8 @@ For instance, in one version of stacks the above file loaded to the data structu
 {:namespace user
  :eval true}
 ---
-> (stacks.tools.sessions/parse-session
-    (slurp (clojure.java.io/resource "example.repl")))
+user> (stacks.tools.sessions/parse-session
+        (slurp (clojure.java.io/resource "example.repl")))
 ```
 
 From this structure and given the namespace in which the session occurs it would be possible to use `clojure.tools.analyzer.jvm` to perform expression analysis & macroexpansion for full syntax highlighting.

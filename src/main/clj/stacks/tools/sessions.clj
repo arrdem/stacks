@@ -19,7 +19,7 @@
 (def default-prompt-pattern
   "Default pattern for recognizing prompts.
   Assumes that > is the prompt character, and that it may be followed by a bunch of whitespace."
-  "^[\\w\\.&&[^>]]{0,16}?>")
+  "[=]?>")
 
 (def default-profile
   "Default pseudo-leiningen profile in which to analyze an example."
@@ -51,26 +51,38 @@
   of input, or the next occurrence of the prompt."
   [prompt-or-pattern]
   (let [p (str prompt-or-pattern)]
-    ;; This pattern is a bit involved.
-    ;; - Set dotall with (?s) so that . includes newlines.
-    ;; - Match any preceding ";" comment lines
-    ;; - Match the prompt pattern
-    ;; - Match (but do not capture!) whitespace greedily
-    ;; - Match a bunch of text lazily, being the input form & results.
-    ;; - Use lookahead to another comment, prompt or the end of file to anchor the end of the results.
-    (-> (format "(?sm)([\\s&&[^\n\r]]*;[^\n]*?\n)*?(^%s)(?:\\s*+)(.*?)((?=(^%s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)" p p)
+    (-> (format
+         (str
+          ;; This pattern is a bit involved.
+          ;; - Set dotall with (?s) so that . includes newlines and (?m) being multiline.
+          "(?sm)"
+          ;; - Match any preceding ";" comment lines
+          "(?<comment>[\\s&&[^\n\r]]*;[^\n]*?\n)*?"
+          ;; - Match any text preceding the prompt pattern and assume it's the namespace
+          ;; - Then match  the prompt
+          "(^(?<namespace>[^\n\r]*?)(?<prompt>%1$s))"
+          ;; - Match (but do not capture!) whitespace greedily
+          "(?:\\s*+)"
+          ;; - Match a bunch of text lazily, being the input form & trailing results.
+          "(?<input>.*?)"
+          ;; - Match either:
+          ;;   - The end of file
+          ;;   - (without capturing) a prompt, or subsequent comment
+          "((?=(^[^\n\r]*?%1$s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)")
+         p)
         (re-pattern))))
 
 (defn parse-pair-match
   "Parse a single pair pattern match, returning a `::pair` structure."
   [match]
   (let [;; Destructure the match
-        [_match comment? prompt text _prompt?] match
+        [_match comment? _ namespace prompt text input] match
         ;; Make a mutable reader over the matched text.
-        ;;
+        
         ;; At this point the text contains both the input form, and the printed results of
         ;; evaluation.
         reader (StringReader. text)
+        
         ;; Use rewrite-clj too parse the first form. This is the input form.
         ;;
         ;; Unfortunately there may be syntax errors. Deal with this by producing a pair
@@ -91,12 +103,15 @@
         reader (read-whitespace (PushbackReader. reader))
 
         ;; Consume the rest of the text, it's the results of evaluation.
-        text          (slurp reader)]
-    {:type    ::pair
-     :prompt  prompt
-     :comment comment?
-     :input   (str form)
-     :results [{::val text}]}))
+        text (slurp reader)]
+    {:type      ::pair
+     :namespace namespace
+     :prompt    prompt
+     :comment   comment?
+     :input     (not-empty form)
+     :results   (if-let [text (not-empty text)]
+                  [{::val text}]
+                  [])}))
 
 (defn parse-pairs
   "Parses the sequence of input/output pairs from the session's body.
@@ -153,12 +168,15 @@
       :profile profile
       :pairs   (parse-pairs profile body)})))
 
+(defonce +binding-registry+
+  (atom {}))
+
 (defn evaluate-session
   "Given a parsed session structure, evaluate it (if evaluation was
   requested), returning an updated session."
   ([session]
    (evaluate-session (:profile session default-profile) session))
-  ([{:keys [dependencies namespace printer] :as profile}
+  ([{:keys [dependencies namespace printer bindings] :as profile}
     session]
    ;; FIXME (arrdem 2018-07-08):
    ;;
@@ -174,24 +192,44 @@
            (fn [pairs]
              (if-not (or (:evaluate profile)
                          (:eval profile)
-                         (:evaluate session)
-                         (:eval session))
+                         (:evaluate (:profile session))
+                         (:eval (:profile session)))
                ;; Users can opt out, it's off by default
                pairs
 
                ;; If the user wants us to eval the session...
-               (let [acc (atom [])]
+               (let [acc (atom [])
+                     session-id (or (:session profile)
+                                    (:session (:profile session)))
+                     bindings (or bindings
+                                  (:bindings (:profile session))
+                                  (and session-id
+                                       (get @+binding-registry+ session-id {})))]
                  (prepl (clojure.lang.LineNumberingPushbackReader.
                          (StringReader.
                           (str/join "\n" (map :input pairs))))
                         (fn [{:keys [type val] :as res}]
                           (swap! acc conj
-                                 (if (= type ::prepl/ret)
+                                 (cond
+                                   ;; Handle return values by rendering them
+                                   (= type ::prepl/ret)
                                    (assoc res ::val
                                           (binding [*out* (java.io.StringWriter.)]
                                             ((resolve-fn printer) val)
                                             (.toString *out*)))
+
+                                   ;; Handle end-of-session bindings by updating the profile
+                                   (= type ::prepl/bindings)
+                                   (do (when session-id
+                                         (swap! +binding-registry+
+                                                assoc session-id
+                                                (:bindings res)))
+                                       res)
+
+                                   ;; Pass on other values
+                                   :else
                                    res)))
+                        :bindings bindings
                         :ns namespace)
                  (map-indexed (fn [idx pair]
                                 (let [results (filter #(= (:form-id %) idx) @acc)
@@ -217,7 +255,8 @@
       [:div.results
        (for [{:keys [type stream]
               bare-val :val
-              formatted-val ::val} results]
+              formatted-val ::val} results
+             :when (#{::prepl/stream ::prepl/ret} type)]
          [:pre {:class (cond (= type ::prepl/stream) (name stream)
                              (= type ::prepl/ret) "ret")}
           (let [val (or formatted-val bare-val)]

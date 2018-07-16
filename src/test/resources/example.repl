@@ -1,8 +1,6 @@
 ---
-{:namespace    user
- :dependencies [[org.clojure/clojure "1.8.0"]]
- :prompt       "user>"
-}
+{:namespace user
+ :prompt "user>"}
 ---
 user> (+ 1 1)
 1

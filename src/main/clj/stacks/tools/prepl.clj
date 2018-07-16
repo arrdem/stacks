@@ -30,14 +30,17 @@
   Unlike `#'clojure.core.server/prepl`, accepts `:ns`, being a symbol
   naming the namespace in which evaluation should occur. By default,
   `user` is used."
-  [in-reader out-fn & {:keys [stdin ns] :or {ns 'user}}]
+  [in-reader out-fn &
+   {:keys [stdin ns bindings]
+    :or {ns 'user}}]
   (let [EOF (Object.)
         tapfn #(out-fn {:type ::tap
                         :val %1})
         form-id (volatile! 0)]
     (m/with-bindings
-      (binding [*ns* (clojure.lang.Namespace/findOrCreate ns)
-                *in* (or stdin in-reader)]
+      (with-bindings (merge {#'*ns* (clojure.lang.Namespace/findOrCreate ns)
+                             #'*in* (or stdin in-reader)}
+                            bindings)
         (try
           (add-tap tapfn)
           (loop []
@@ -86,7 +89,22 @@
                                  :val (Throwable->map ex)
                                  :ns (str (.name *ns*))
                                  :form-id current-form-id})
-                        true))
+                        true)
+                      (finally
+                        (out-fn
+                         {:type ::bindings
+                          :form-id current-form-id
+                          :bindings (select-keys (clojure.lang.Var/getThreadBindings)
+                                                 ;; REPL state defining a session
+                                                 ;; List from #'clojure.main/with-bindings
+                                                 ;;
+                                                 ;; One could choose to persist the entire binding state, but
+                                                 ;; ... idk how I feel about that.
+                                                 [#'*ns* #'*warn-on-reflection* #'*math-context* #'*print-meta*
+                                                  #'*print-length* #'*print-level* #'*print-namespace-maps*
+                                                  #'*data-readers* #'*default-data-reader-fn* #'*compile-path*
+                                                  #'*command-line-args* #'*unchecked-math* #'*assert*
+                                                  #'clojure.spec.alpha/*explain-out* #'*1 #'*2 #'*3 #'*e])})))
                 (vswap! form-id inc)
                 (recur))))
           (finally

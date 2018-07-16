@@ -172,7 +172,7 @@
          docs)))
 
 (defn index-sessions [options project project-files]
-{})
+  {})
 
 (defn index-project
   "Given Options, a Leiningen project and the files comprising that

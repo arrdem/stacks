@@ -1,12 +1,17 @@
 # Articles
 
-REPL [Sessions](/doc/sessions.md) are great, but aren't always the appropriate pedagogical tool, especially when much explaining is required.
+[REPL Sessions](/doc/sessions.md) are an excellent tool for illustrating specific examples, but aren't always the appropriate pedagogical tool.
+Comments are a poor medium within which to format more than simple statements, and they break the flow of the REPL session as an interactive session.
 
-Frequently it'd be better to interleave examples with fully formatted text.
+Rather than trying to embed much explaining textually within a REPL session, it's better to think of the REPL session itself as an illustration within a larger explanation or document context, say interleave examples within fully formatted text.
+
 This lets authors build their narrative while taking the greatest advantage of available formatting, while still being precise where precision is possible about the inputs outputs and results of evaluation.
 
-Once documentation is in a rich data form, applying syntax highlighting and IDE-like code analysis becomes quite tractable.
-Furthermore, the documentation itself becomes somewhat decoupled from its final rendering.
+This is the role which Articles aim to fill - they aim to augment the widely adopted Markdown (technically [CommonMark](http://commonmark.org/)) formatting language with convenient facilities for embedding more than just static examples.
+
+Articles and their components can be processed with the CommonMark tools to produce a data representation not unlike a Hiccup tree.
+This allows the use of custom rendering features for embedded content such as sessions, as well as static document analysis.
+Say spellchecking, automated cross linking between documents and soforth.
 
 ### Demo: Article parsing
 Take for example [**example.md**](/src/test/resources/example.md) from the test suite - included literally here.
