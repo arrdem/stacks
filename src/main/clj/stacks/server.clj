@@ -4,6 +4,7 @@
   Lots of cribbing from Grimoire here. Surprise."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
+  (:gen-class)
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
 
@@ -78,7 +79,8 @@
     (as-> (or (let [f (io/file (str article ".md"))]
                 (if (.exists f) f))
               (let [f (io/file (str "doc/" article ".md"))]
-                (if (.exists f) f))) %
+                (if (.exists f) f))
+              (io/resource (str article ".md"))) %
       (articles/parse-article +article-parsing-middleware+ %)
       (articles/render-article +article-rendering-middleware+ %)
       (layout %)))

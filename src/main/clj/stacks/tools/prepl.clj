@@ -38,7 +38,9 @@
                         :val %1})
         form-id (volatile! 0)]
     (m/with-bindings
-      (with-bindings (merge {#'*ns* (do (require ns)
+      (with-bindings (merge {#'*ns* (do (try (require ns)
+                                             (catch Throwable t
+                                               nil))
                                         (clojure.lang.Namespace/findOrCreate ns))
                              #'*in* (or stdin in-reader)}
                             bindings)
