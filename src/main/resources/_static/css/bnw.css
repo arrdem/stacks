@@ -1,0 +1,6 @@
+div#sidebar a {
+  text-decoration: none;
+}
+div#sidebar a:hover {
+  text-decoration: underline;
+}

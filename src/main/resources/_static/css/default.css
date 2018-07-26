@@ -1,7 +1,83 @@
-body#body div.sidebar {
-  width: 10em;
+div#sidebar a {
+  text-decoration: none;
 }
-body#body div.content {
-  margin-left: 12em;
-  width: 60em;
+div#sidebar a:hover {
+  text-decoration: underline;
+}
+body#body {
+  font-size: 12px;
+  background: white;
+  color: black;
+  margin: 0px;
+  min-width: 800px;
+}
+body#body div#sidebar {
+  display: inline-block;
+  position: fixed;
+  top: 0px;
+  bottom: 0px;
+  min-width: 20%;
+  padding: 10px;
+  background: #202020;
+  color: white;
+}
+body#body div#sidebar a {
+  color: #fff;
+}
+body#body div#content {
+  display: inline-block;
+  background: white;
+  color: black;
+  padding: 10px 10px 10px 5%;
+  margin-left: 20%;
+  width: 70%;
+}
+body#body div#content a {
+  color: blue;
+}
+body#body div#content code {
+  background: white;
+}
+body#body div#content p {
+  line-height: 1.25em;
+  text-align: justify;
+  text-rendering: optimizeLegibility;
+}
+body#body div#content img {
+  margin: 10px;
+}
+body#body div#content table thead {
+  font-weight: bold;
+}
+@media (min-width: 800px) {
+  body#body {
+    font-size: 12px;
+  }
+  body#body div#content {
+    max-width: 840px;
+  }
+}
+@media (min-width: 1440px) {
+  body#body {
+    font-size: 14px;
+  }
+  body#body div#content {
+    max-width: 980px;
+  }
+}
+@media (min-width: 1680px) {
+  body#body {
+    font-size: 16px;
+  }
+  body#body div#content {
+    max-width: 1120px;
+  }
+}
+@media (min-width: 1920px) {
+  body#body {
+    font-size: 18px;
+  }
+  body#body div#content {
+    max-width: 1260px;
+  }
 }

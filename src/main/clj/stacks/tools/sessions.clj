@@ -43,7 +43,11 @@
    ;; printing behavior.
    ;;
    ;; Default's to Clojure's default printer.
-   :printer 'clojure.pprint/pprint})
+   :printer 'clojure.pprint/pprint
+   :bindings {#'clojure.core/*print-namespace-maps* false
+              ;;#'clojure.core/*print-length* 5
+              ;;#'clojure.core/*print-level* 5
+              }})
 
 (defn make-pair-pattern
   "Constructs a pattern which matches the given prompt (or prompt

@@ -205,6 +205,16 @@
      tree)
     @acc))
 
+(defn infer-title [content]
+  (let [acc (volatile! [])]
+    (postwalk-hiccup
+     (fn [[tag attrs title :as %]]
+       (when (#{:h1} tag)
+         (vswap! acc conj title))
+       %)
+     content)
+    (first @acc)))
+
 (defn parse-article*
   "Takes a location and a buffer read from that location. Produces an `::article`.
 
@@ -219,7 +229,8 @@
      :source     source-loc
      :labels     (collect-labels content)
      :references (collect-references content)
-     :content    content}))
+     :content    content
+     :title      (infer-title content)}))
 
 (defn parse-article
   "Takes a file path, resource path, File instance or raw buffer and parses it to an `::article`."

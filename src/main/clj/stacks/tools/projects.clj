@@ -99,7 +99,7 @@
                            (let [uri      ^URI (.toURI f)
                                  uri-text (.toString uri)]
                              (when (some #(re-matches % uri-text) filter-patterns)
-                               uri)))))}))
+                               f)))))}))
 
 (def find-sources
   (partial find-project-files :source-extensions [:source-paths] :sources))
@@ -134,14 +134,14 @@
   (let [{:keys [platform]
          :or   {platform 'clj}} project
         {:keys [sources]}       project-files]
-    (map (fn [url]
+    (map (fn [^File file]
            {:type      ::file
-            :namespace (if-let [form (read-file-ns-form url)]
-                         (if (= (first form) 'in-ns)
-                           ;; FIXME (arrdem 2017-12-25):
-                           ;;   What kind of ns structure to generate in this case?
-                           (second form)
-                           (parse-ns-form form)))
+            :content (if-let [form (read-file-ns-form file)]
+                       (if (= (first form) 'in-ns)
+                         ;; FIXME (arrdem 2017-12-25):
+                         ;;   What kind of ns structure to generate in this case?
+                         (second form)
+                         (parse-ns-form form)))
             ;; FIXME (arrdem 2017-12-25):
             ;;   I really want to index the contents of a namespace too. This means doing code
             ;;   loading because that's the only way to actually extract docstrings. Code loading
@@ -155,7 +155,8 @@
             ;;
             ;; Prior art: Boot pods
             ;;   https://github.com/boot-clj/boot/wiki/Pods
-            :url       url})
+            :file      file
+            :url       (.toURL (.getAbsoluteFile file))})
          sources)))
 
 (defn index-docs
@@ -165,10 +166,11 @@
    project
    project-files]
   (let [{:keys [docs]} project-files]
-    (map (fn [url]
+    (map (fn [^File file]
            {:type    ::file
-            :content (articles/parse-article parse-article-middleware url)
-            :url     url})
+            :content (articles/parse-article parse-article-middleware file)
+            :file    file
+            :url     (.toURL (.getAbsoluteFile file))})
          docs)))
 
 (defn index-sessions [options project project-files]
@@ -189,10 +191,12 @@
   Accepts a Leiningen style project, having `:source-paths`,
   `:java-source-paths`, `:resource-paths`, and `:doc-paths`. Emulates
   a classpath, indexing all"
-  [options project]
-  (let [options       (normalize-options options)
-        project-files (find-files options project)]
-    (index-project options project project-files)))
+  ([project]
+   (project->doctree +default-options+ project))
+  ([options project]
+   (let [options       (normalize-options options)
+         project-files (find-files options project)]
+     (index-project options project project-files))))
 
 (comment
   ;; Test of all the above

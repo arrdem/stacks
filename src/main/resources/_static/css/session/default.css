@@ -1,6 +1,9 @@
-div.session {
-  overflow: hidden;
+div#content div.session {
+  padding: 10px;
 }
-div.session .namespace {
+div#content div.session div {
+  padding: 0px;
+}
+div#content div.session .namespace {
   clear: right;
 }

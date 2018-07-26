@@ -15,7 +15,7 @@
   :dependencies [[org.clojure/clojure "1.10.0-alpha6"]
                  [org.clojure/java.classpath "0.2.3"]
                  [fundingcircle/ring-accept "LATEST"]
-                 [me.arrdem/commonmark-hiccup "0.1.1"]
+                 [me.arrdem/commonmark-hiccup "0.1.1-SNAPSHOT"]
                  [me.arrdem/detritus "0.3.3"]
                  [me.arrdem/microfiche "0.1.0"]
                  [me.raynes/conch "0.8.0"]
