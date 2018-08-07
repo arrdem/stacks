@@ -90,7 +90,7 @@
 
 (defn layout
   "Lay out content into a page with a doctree sidebar."
-  [content & [active?]]
+  [content & [active? title?]]
   (html
    [:head
     (for [size [57 60 72 76 114 120 144 152 180]
@@ -120,7 +120,10 @@
 
     (page/include-css "/css/session/default.css")
     (page/include-css "/css/pygments/default.css")
-    #_(page/include-css "/css/pygments/codeschool.css")]
+    #_(page/include-css "/css/pygments/codeschool.css")
+
+    (when title?
+      [:title title? "- Stacks"])]
    [:body#body
     [:div#sidebar
      [:h1 [:a {:href "/"} "Stacks"]]
@@ -141,10 +144,10 @@
                         (let [f (io/file (str "doc/" article ".md"))]
                           (if (.exists f) f))
                         #_(io/resource (str article ".md")))]
-      (as-> source %
-        (articles/parse-article +article-parsing-middleware+ %)
-        (articles/render-article +article-rendering-middleware+ %)
-        (layout % (.getPath ^File source)))))
+      (let [article (articles/parse-article +article-parsing-middleware+ source)]
+        (layout (articles/render-article +article-rendering-middleware+ article)
+                (.getPath ^File source)
+                (:title article)))))
 
   ;; Rewrite doc/ to articles
   (GET "/doc/:file" [file]
