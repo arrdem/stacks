@@ -4,7 +4,6 @@
   Lots of cribbing from Grimoire here. Surprise."
   {:authors ["Reid \"arrdem\" McKenzie <me@arrdem.com>"]
    :license "https://www.eclipse.org/legal/epl-v10.html"}
-  (:gen-class)
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
 

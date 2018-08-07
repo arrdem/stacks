@@ -9,7 +9,6 @@
   :java-source-paths ["src/main/jvm"]
   :resource-paths    ["src/main/resources"]
 
-  :aot [stacks.server]
   :main stacks.server
 
   :dependencies [[org.clojure/clojure "1.10.0-alpha6"]
