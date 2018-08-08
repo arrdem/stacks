@@ -6,7 +6,7 @@
 ## Manifesto
 
 As a student at the University of Texas at Austin, I loved wandering around the computer science collection of the Perry Castañeda library.
-It was always quiet, the musty smell of long-untouched books was great and I could wander from shelf to shelf picking all manner of CS arcana and detail about long-obsolete and forgotten systems to peruse.
+It was always quiet, and amid the musty smell of long-untouched books I ignored many homework projects wandering from shelf to shelf picking all manner of CS arcana and detail about long-obsolete and forgotten systems to peruse.
 
 It's no secret that most documentation is bad.
 Writing good documentation is really hard, and is itself a skill worthy of far more development and attention than most give it myself included.
