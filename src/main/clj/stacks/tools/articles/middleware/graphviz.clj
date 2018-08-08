@@ -14,7 +14,7 @@
   (fn [{:keys [tag attrs raw] :as node}]
     (if (contains? +graphviz-tags+ tag)
       (let-programs [graphviz "dot"]
-        [:div.highlight
+        [:div.center
          (graphviz "-Tsvg"
                    {:in raw})])
       (middleware node))))

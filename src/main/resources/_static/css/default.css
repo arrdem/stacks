@@ -9,6 +9,14 @@ a > div:hover,
 a > span:hover {
   text-decoration: underline;
 }
+div.center {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+div.center svg {
+  display: block;
+}
 div#wrapper {
   display: flex;
   overflow: hidden;
@@ -23,6 +31,7 @@ body#body {
 div#sidebar {
   flex: 0;
   width: 25%;
+  min-height: 100%;
   padding: 10px;
   background: #202020;
   color: white;
@@ -76,7 +85,6 @@ div#sidebar .source-tree ul li .tree {
   display: block;
   float: left;
   position: relative;
-  top: -10px;
   margin: 0 4px 0 0;
   padding: 0;
 }
@@ -125,37 +133,40 @@ div#content img {
 div#content table thead {
   font-weight: bold;
 }
-.depth-1 .inner {
-  padding-left: 2px;
-}
-.depth-2 .inner {
-  padding-left: 6px;
-}
-.depth-3 .inner {
-  padding-left: 20px;
-}
-.depth-4 .inner {
-  padding-left: 34px;
-}
-.depth-5 .inner {
-  padding-left: 48px;
-}
-.depth-6 .inner {
-  padding-left: 62px;
-}
-.depth-7 .inner {
-  padding-left: 76px;
-}
-.depth-8 .inner {
-  padding-left: 90px;
-}
-.depth-9 .inner {
-  padding-left: 104px;
-}
-.depth-10 .inner {
-  padding-left: 118px;
-}
 @media (min-width: 800px) {
+  .depth-1 .inner {
+    padding-left: 2px;
+  }
+  .depth-2 .inner {
+    padding-left: 6px;
+  }
+  .depth-3 .inner {
+    padding-left: 18px;
+  }
+  .depth-4 .inner {
+    padding-left: 30px;
+  }
+  .depth-5 .inner {
+    padding-left: 42px;
+  }
+  .depth-6 .inner {
+    padding-left: 54px;
+  }
+  .depth-7 .inner {
+    padding-left: 66px;
+  }
+  .depth-8 .inner {
+    padding-left: 78px;
+  }
+  .depth-9 .inner {
+    padding-left: 90px;
+  }
+  .depth-10 .inner {
+    padding-left: 102px;
+  }
+  .source-tree li .tree {
+    top: -10px;
+  }
   body#body {
     font-size: 12px;
   }
@@ -164,6 +175,39 @@ div#content table thead {
   }
 }
 @media (min-width: 1440px) {
+  .depth-1 .inner {
+    padding-left: 2px;
+  }
+  .depth-2 .inner {
+    padding-left: 6px;
+  }
+  .depth-3 .inner {
+    padding-left: 20px;
+  }
+  .depth-4 .inner {
+    padding-left: 34px;
+  }
+  .depth-5 .inner {
+    padding-left: 48px;
+  }
+  .depth-6 .inner {
+    padding-left: 62px;
+  }
+  .depth-7 .inner {
+    padding-left: 76px;
+  }
+  .depth-8 .inner {
+    padding-left: 90px;
+  }
+  .depth-9 .inner {
+    padding-left: 104px;
+  }
+  .depth-10 .inner {
+    padding-left: 118px;
+  }
+  .source-tree li .tree {
+    top: -8px;
+  }
   body#body {
     font-size: 14px;
   }
@@ -172,6 +216,39 @@ div#content table thead {
   }
 }
 @media (min-width: 1680px) {
+  .depth-1 .inner {
+    padding-left: 2px;
+  }
+  .depth-2 .inner {
+    padding-left: 6px;
+  }
+  .depth-3 .inner {
+    padding-left: 24px;
+  }
+  .depth-4 .inner {
+    padding-left: 40px;
+  }
+  .depth-5 .inner {
+    padding-left: 56px;
+  }
+  .depth-6 .inner {
+    padding-left: 72px;
+  }
+  .depth-7 .inner {
+    padding-left: 88px;
+  }
+  .depth-8 .inner {
+    padding-left: 104px;
+  }
+  .depth-9 .inner {
+    padding-left: 120px;
+  }
+  .depth-10 .inner {
+    padding-left: 136px;
+  }
+  .source-tree li .tree {
+    top: -6px;
+  }
   body#body {
     font-size: 16px;
   }
@@ -180,6 +257,39 @@ div#content table thead {
   }
 }
 @media (min-width: 1920px) {
+  .depth-1 .inner {
+    padding-left: 2px;
+  }
+  .depth-2 .inner {
+    padding-left: 6px;
+  }
+  .depth-3 .inner {
+    padding-left: 24px;
+  }
+  .depth-4 .inner {
+    padding-left: 42px;
+  }
+  .depth-5 .inner {
+    padding-left: 60px;
+  }
+  .depth-6 .inner {
+    padding-left: 78px;
+  }
+  .depth-7 .inner {
+    padding-left: 86px;
+  }
+  .depth-8 .inner {
+    padding-left: 104px;
+  }
+  .depth-9 .inner {
+    padding-left: 122px;
+  }
+  .depth-10 .inner {
+    padding-left: 140px;
+  }
+  .source-tree li .tree {
+    top: -4px;
+  }
   body#body {
     font-size: 18px;
   }
