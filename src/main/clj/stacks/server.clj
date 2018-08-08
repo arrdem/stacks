@@ -128,7 +128,7 @@
     #_(page/include-css "/css/pygments/codeschool.css")
 
     (when title?
-      [:title title? "- Stacks"])]
+      [:title title? " - Stacks"])]
    [:body#body
     [:div#sidebar
      [:h1 [:a {:href "/"} "Stacks"]]
