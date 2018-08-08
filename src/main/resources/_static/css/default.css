@@ -9,6 +9,10 @@ a > div:hover,
 a > span:hover {
   text-decoration: underline;
 }
+div#wrapper {
+  display: flex;
+  overflow: hidden;
+}
 body#body {
   font-size: 12px;
   background: white;
@@ -16,49 +20,45 @@ body#body {
   margin: 0px;
   min-width: 800px;
 }
-body#body div#sidebar {
-  display: inline-block;
-  position: fixed;
-  top: 0px;
-  bottom: 0px;
+div#sidebar {
+  flex: 0;
   width: 25%;
-  overflow-y: scroll;
   padding: 10px;
   background: #202020;
   color: white;
 }
-body#body div#sidebar a {
+div#sidebar a {
   color: #fff;
 }
-body#body div#sidebar h1,
-body#body div#sidebar h2,
-body#body div#sidebar h3 {
+div#sidebar h1,
+div#sidebar h2,
+div#sidebar h3 {
   margin-top: 0px;
   margin-bottom: 0px;
 }
-body#body div#sidebar ul {
+div#sidebar ul {
   padding: 0px;
   margin: 0;
 }
-body#body div#sidebar ul.index-link {
+div#sidebar ul.index-link {
   padding-bottom: 4px;
 }
-body#body div#sidebar .source-tree ul {
+div#sidebar .source-tree ul {
   list-style: none;
   overflow: visible;
 }
-body#body div#sidebar .source-tree ul li {
+div#sidebar .source-tree ul li {
   margin: 0px;
   display: block;
   vertical-align: middle;
 }
-body#body div#sidebar .source-tree ul li a {
+div#sidebar .source-tree ul li a {
   border-left: 3px solid transparent;
   padding: 0 10px;
   white-space: nowrap;
   height: 31px;
 }
-body#body div#sidebar .source-tree ul li .no-link {
+div#sidebar .source-tree ul li .no-link {
   border-left: 3px solid transparent;
   padding: 0 10px;
   white-space: nowrap;
@@ -66,12 +66,12 @@ body#body div#sidebar .source-tree ul li .no-link {
   color: white;
   font-style: italic;
 }
-body#body div#sidebar .source-tree ul li .inner {
+div#sidebar .source-tree ul li .inner {
   display: inline-block;
   padding-top: 7px;
   height: 24px;
 }
-body#body div#sidebar .source-tree ul li .tree {
+div#sidebar .source-tree ul li .tree {
   height: 31px;
   display: block;
   float: left;
@@ -80,7 +80,7 @@ body#body div#sidebar .source-tree ul li .tree {
   margin: 0 4px 0 0;
   padding: 0;
 }
-body#body div#sidebar .source-tree ul li .tree .top {
+div#sidebar .source-tree ul li .tree .top {
   display: block;
   margin: 0;
   padding: 0;
@@ -89,41 +89,40 @@ body#body div#sidebar .source-tree ul li .tree .top {
   border-bottom: 1px solid #aaa;
   height: 19px;
 }
-body#body div#sidebar .source-tree ul li .tree .bottom {
+div#sidebar .source-tree ul li .tree .bottom {
   display: block;
   margin: 0;
   padding: 0;
   width: 7px;
   height: 22px;
 }
-body#body div#sidebar .source-tree ul li.depth-1 .tree {
+div#sidebar .source-tree ul li.depth-1 .tree {
   display: none;
 }
-body#body div#sidebar .source-tree ul li.branch .tree .bottom {
+div#sidebar .source-tree ul li.branch .tree .bottom {
   border-left: 1px solid #aaa;
 }
-body#body div#content {
-  display: inline-block;
+div#content {
+  flex: 1;
+  padding: 10px 5%;
   background: white;
   color: black;
-  padding: 10px 5%;
-  margin-left: 25%;
 }
-body#body div#content a {
+div#content a {
   color: blue;
 }
-body#body div#content code {
+div#content code {
   background: white;
 }
-body#body div#content p {
+div#content p {
   line-height: 1.25em;
   text-align: justify;
   text-rendering: optimizeLegibility;
 }
-body#body div#content img {
+div#content img {
   margin: 10px;
 }
-body#body div#content table thead {
+div#content table thead {
   font-weight: bold;
 }
 .depth-1 .inner {

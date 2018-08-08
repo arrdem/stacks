@@ -1,0 +1,74 @@
+// Borrowed from Codox
+// Note that this is a fragment used by default.less
+.source-tree {
+  ul {
+    list-style: none;
+    overflow: visible;
+
+    li {
+      margin: 0px;
+      display: block;
+      vertical-align: middle;
+
+      a {
+        border-left: 3px solid transparent;
+        padding: 0 10px;
+        white-space: nowrap;
+        height: 31px;
+      }
+
+      .no-link {
+        border-left: 3px solid transparent;
+        padding: 0 10px;
+        white-space: nowrap;
+        display: block;
+        color: @sidebar_text_color;
+        font-style: italic;
+      }
+      .inner {
+        display: inline-block;
+        padding-top: 7px;
+        height: 24px;
+      }
+
+      .tree {
+        height: 31px;
+        display: block;
+        float: left;
+        position: relative;
+        top: -10px;
+        margin: 0 4px 0 0;
+        padding: 0;
+        .top {
+          display: block;
+          margin: 0;
+          padding: 0;
+          width: 7px;
+          border-left: 1px solid #aaa;
+          border-bottom: 1px solid #aaa;
+          height: 19px;
+        }
+        .bottom {
+          display: block;
+          margin: 0;
+          padding: 0;
+          width: 7px;
+          height: 22px;
+        }
+      }
+    }
+
+    li.depth-1 {
+      .tree {
+        display: none;
+      }
+    }
+    li.branch {
+      .tree {
+        .bottom {
+          border-left: 1px solid #aaa;
+        }
+      }
+    }
+  }
+}

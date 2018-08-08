@@ -71,7 +71,7 @@
 (defn doctree->toctree
   "Given a doctree and the address of an item in the doctree, render a
   sidebar table highlighting the currently active page."
-  [doctree & [active?]]
+  [{:keys [sources] :as doctree} & [active?]]
   (list
    [:h2 "Articles"]
    [:ul {}
@@ -83,11 +83,12 @@
               (= path* active?) (vector :b))]])]
    [:h2 "Namespaces"]
    [:div.source-tree
-    (let [sources->paths (zipmap (map :content (:sources doctree))
-                                 (map #(str "/" (.getPath (:file %))) (:sources doctree)))]
+    (let [sources->paths (zipmap (map :content sources)
+                                 (map #(str "/" (.getPath (:file %)))
+                                      sources))]
       (doctree->source-tree
        sources->paths
-       (map :content (:sources doctree))
+       (map :content sources)
        (get (map-invert sources->paths) active?)))]))
 
 (defn layout
@@ -110,9 +111,12 @@
 
     [:link {:rel "manifest", :href "/manifest.json"}]
 
-    [:meta {:name "msapplication-TileColor", :content "#ffffff"}]
-    [:meta {:name "msapplication-TileImage", :content "/ico/ms-icon-144x144.png"}]
-    [:meta {:name "theme-color", :content "#ffffff"}]
+    [:meta {:name "msapplication-TileColor",
+            :content "#ffffff"}]
+    [:meta {:name "msapplication-TileImage",
+            :content "/ico/ms-icon-144x144.png"}]
+    [:meta {:name "theme-color",
+            :content "#ffffff"}]
 
     (page/include-css "/css/normalize.css")
     (page/include-css "/css/skeleton.css")
@@ -130,12 +134,13 @@
     (when title?
       [:title title? " - Stacks"])]
    [:body#body
-    [:div#sidebar
-     [:h1 [:a {:href "/"} "Stacks"]]
-     [:hr]
-     (doctree->toctree +project-doctree+ active?)]
-    [:div#content
-     content]]
+    [:div#wrapper
+     [:div#sidebar.wrapped
+      [:h1 [:a {:href "/"} "Stacks"]]
+      [:hr]
+      (doctree->toctree +project-doctree+ active?)]
+     [:div#content.wrapped
+      content]]]
    [:foot
     ]))
 
@@ -149,8 +154,10 @@
                         (let [f (io/file (str "doc/" article ".md"))]
                           (if (.exists f) f))
                         #_(io/resource (str article ".md")))]
-      (let [article (articles/parse-article +article-parsing-middleware+ source)]
-        (layout (articles/render-article +article-rendering-middleware+ article)
+      (let [article (articles/parse-article +article-parsing-middleware+
+                                            source)]
+        (layout (articles/render-article +article-rendering-middleware+
+                                         article)
                 (.getPath ^File source)
                 (:title article)))))
 
@@ -169,7 +176,9 @@
 
 (defn log-requests [handler]
   (fn [request]
-    (prn (select-keys request [:request-method :uri :remote-addr :query-string :headers]))
+    (prn (select-keys request
+                      [:request-method :uri :remote-addr
+                       :query-string :headers]))
     (handler request)))
 
 (defonce +server+

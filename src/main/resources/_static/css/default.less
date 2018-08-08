@@ -6,6 +6,12 @@ a:hover, a > div:hover, a > span:hover {
   text-decoration: underline;
 }
 
+@big_value: 32767px;
+
+div#wrapper {
+  display: flex;
+  overflow: hidden;
+}
 
 body#body {
   font-size: 12px;
@@ -13,143 +19,64 @@ body#body {
   color: @body_text_color;
   margin: 0px;
   min-width: 800px;
+}
 
-  div#sidebar {
-    display:inline-block;
+div#sidebar {
+  flex: 0;
+  width: 25%;
 
-    position: fixed;
-    top: 0px;
-    bottom: 0px;
-    width: 25%;
-    overflow-y: scroll;
+  padding: 10px;
 
-    padding: 10px;
+  background: @sidebar_bg_color;
+  color: @sidebar_text_color;
 
-    background: @sidebar_bg_color;
-    color: @sidebar_text_color;
-
-    a {
-      color: @sidebar_a_color;
-    }
-
-    h1, h2, h3 {
-      margin-top: 0px;
-      margin-bottom: 0px;
-    }
-
-    ul {
-      padding: 0px;
-      margin: 0;
-    }
-    ul.index-link {
-      padding-bottom: 4px;
-    }
-
-    // Borrowed from Codox
-    .source-tree {
-      ul {
-        list-style: none;
-        overflow: visible;
-
-        li {
-          margin: 0px;
-          display: block;
-          vertical-align: middle;
-
-          a {
-            border-left: 3px solid transparent;
-            padding: 0 10px;
-            white-space: nowrap;
-            height: 31px;
-          }
-
-          .no-link {
-            border-left: 3px solid transparent;
-            padding: 0 10px;
-            white-space: nowrap;
-            display: block;
-            color: @sidebar_text_color;
-            font-style: italic;
-          }
-          .inner {
-            display: inline-block;
-            padding-top: 7px;
-            height: 24px;
-          }
-
-          .tree {
-            height: 31px;
-            display: block;
-            float: left;
-            position: relative;
-            top: -10px;
-            margin: 0 4px 0 0;
-            padding: 0;
-            .top {
-              display: block;
-              margin: 0;
-              padding: 0;
-              width: 7px;
-              border-left: 1px solid #aaa;
-              border-bottom: 1px solid #aaa;
-              height: 19px;
-            }
-            .bottom {
-              display: block;
-              margin: 0;
-              padding: 0;
-              width: 7px;
-              height: 22px;
-            }
-          }
-        }
-
-        li.depth-1 {
-          .tree {
-            display: none;
-          }
-        }
-        li.branch {
-          .tree {
-            .bottom {
-              border-left: 1px solid #aaa;
-            }
-          }
-        }
-      }
-    }
+  a {
+    color: @sidebar_a_color;
   }
 
-  div#content {
-    display:inline-block;
+  h1, h2, h3 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
 
-    background: @content_bg_color;
-    color: @content_text_color;
+  ul {
+    padding: 0px;
+    margin: 0;
+  }
+  ul.index-link {
+    padding-bottom: 4px;
+  }
 
-    padding: 10px 5%;
-    margin-left: 25%;
+  @import "codox-tree.less";
+}
 
-    a {
-      color: @content_a_color;
-    }
+div#content {
+  flex: 1;
+  padding: 10px 5%;
 
-    code {
-      background: white;
-    }
+  background: @content_bg_color;
+  color: @content_text_color;
 
-    p {
-      line-height: 1.25em;
-      text-align: justify;
-      text-rendering: optimizeLegibility;
-    }
+  a {
+    color: @content_a_color;
+  }
 
-    img {
-      margin: 10px;
-    }
+  code {
+    background: white;
+  }
 
-    table thead {
-      font-weight: bold;
-    }
+  p {
+    line-height: 1.25em;
+    text-align: justify;
+    text-rendering: optimizeLegibility;
+  }
+
+  img {
+    margin: 10px;
+  }
+
+  table thead {
+    font-weight: bold;
   }
 }
 
