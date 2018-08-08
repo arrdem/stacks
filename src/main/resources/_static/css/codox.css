@@ -1,0 +1,122 @@
+#sidebar {
+  position: fixed;
+  top: 32px;
+  bottom: 0;
+  overflow: auto;
+}
+#sidebar ul {
+  padding: 0px;
+  margin: 0;
+}
+#sidebar ul.index-link {
+  padding-bottom: 4px;
+}
+#sidebar .source-tree ul {
+  list-style: none;
+  overflow: visible;
+}
+#sidebar .source-tree ul li {
+  margin: 0px;
+  display: block;
+  vertical-align: middle;
+}
+#sidebar .source-tree ul li a {
+  border-left: 3px solid transparent;
+  padding: 0 10px;
+  white-space: nowrap;
+  height: 31px;
+}
+#sidebar .source-tree ul li .no-link {
+  border-left: 3px solid transparent;
+  padding: 0 10px;
+  white-space: nowrap;
+  display: block;
+  color: white;
+  font-style: italic;
+}
+#sidebar .source-tree ul li .inner {
+  display: inline-block;
+  padding-top: 7px;
+  height: 24px;
+}
+#sidebar .source-tree ul li .tree {
+  height: 31px;
+  display: block;
+  float: left;
+  position: relative;
+  top: -10px;
+  margin: 0 4px 0 0;
+  padding: 0;
+}
+#sidebar .source-tree ul li .tree .top {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 7px;
+  border-left: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  height: 19px;
+}
+#sidebar .source-tree ul li .tree .bottom {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 7px;
+  height: 22px;
+}
+#sidebar .source-tree ul li.depth-1 .tree {
+  display: none;
+}
+#sidebar .source-tree ul li.branch .tree .bottom {
+  border-left: 1px solid #aaa;
+}
+.sidebar.primary {
+  background: #e2e2e2;
+  border-right: solid 1px #cccccc;
+  left: 0;
+  width: 250px;
+}
+.sidebar.primary li.current a {
+  border-left: 3px solid #a33;
+  color: #a33;
+}
+.sidebar.secondary {
+  background: #f2f2f2;
+  border-right: solid 1px #d7d7d7;
+  left: 251px;
+  width: 200px;
+}
+.sidebar.secondary li.current a {
+  border-left: 3px solid #33a;
+  color: #33a;
+}
+.depth-1 .inner {
+  padding-left: 2px;
+}
+.depth-2 .inner {
+  padding-left: 6px;
+}
+.depth-3 .inner {
+  padding-left: 20px;
+}
+.depth-4 .inner {
+  padding-left: 34px;
+}
+.depth-5 .inner {
+  padding-left: 48px;
+}
+.depth-6 .inner {
+  padding-left: 62px;
+}
+.depth-7 .inner {
+  padding-left: 76px;
+}
+.depth-8 .inner {
+  padding-left: 90px;
+}
+.depth-9 .inner {
+  padding-left: 104px;
+}
+.depth-10 .inner {
+  padding-left: 118px;
+}

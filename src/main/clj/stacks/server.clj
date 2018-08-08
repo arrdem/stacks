@@ -6,6 +6,7 @@
    :license "https://www.eclipse.org/legal/epl-v10.html"}
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
+            [clojure.set :refer [map-invert]]
 
             [compojure.core :refer [defroutes GET]]
             [compojure.handler :as handler]
@@ -20,6 +21,7 @@
             [ring.util.response :refer [redirect]]
 
             [stacks.tools.projects :refer [project->doctree]]
+            [stacks.tools.source-tree :refer [doctree->source-tree]]
             [stacks.tools.pygments :refer [pygmentize-file]]
 
             ;; Articles, Article handlers
@@ -63,8 +65,8 @@
    :doc-paths ["doc"
                "README.md"]})
 
-(def +project-doctree+
-(project->doctree +project+))
+(defonce +project-doctree+
+  (project->doctree +project+))
 
 (defn doctree->toctree
   "Given a doctree and the address of an item in the doctree, render a
@@ -80,13 +82,13 @@
             (cond->> (:title content)
               (= path* active?) (vector :b))]])]
    [:h2 "Namespaces"]
-   [:ul {}
-    (for [{:keys [file content] :as f} (:sources doctree)
-          :let [path* (.getPath ^File file)
-                path (str "/" path*)]]
-      [:li [:a {:href path}
-            (cond->> (:name content)
-              (= path* active?) (vector :b))]])]))
+   [:div.source-tree
+    (let [sources->paths (zipmap (map :content (:sources doctree))
+                                 (map #(str "/" (.getPath (:file %))) (:sources doctree)))]
+      (doctree->source-tree
+       sources->paths
+       (map :content (:sources doctree))
+       (get (map-invert sources->paths) active?)))]))
 
 (defn layout
   "Lay out content into a page with a doctree sidebar."
@@ -115,7 +117,10 @@
     (page/include-css "/css/normalize.css")
     (page/include-css "/css/skeleton.css")
 
+    ;; My CSS
     (page/include-css "/css/default.css")
+
+    ;; CSS for articles (can I selectively include / inject this?)
     (page/include-css "/css/articles/default.css")
 
     (page/include-css "/css/session/default.css")
