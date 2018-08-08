@@ -230,10 +230,6 @@
                 :bindings bindings
                 :ns namespace)
 
-         ;; Wait for a "close" message
-         (while (not (some #(= ::prepl/close (:type %)) @acc))
-           (Thread/sleep 100))
-
          (let [results @acc
                ret (first (filter #(= (:type %) ::prepl/ret) results))]
            (assoc pair
