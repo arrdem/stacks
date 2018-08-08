@@ -111,6 +111,9 @@
                 (vswap! form-id inc)
                 (recur))))
           (finally
+            ;; Send a close signal
+            (out-fn
+             {:type ::close})
             (remove-tap tapfn)))))))
 
 (defn resolve-fn

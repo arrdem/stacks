@@ -185,13 +185,68 @@
 (defonce +binding-registry+
   (atom {}))
 
+(defn evaluate-pairs [pairs {:keys [evaluate eval session dependencies namespace
+                                    printer bindings]
+                             :as profile}]
+  (if-not (or evaluate eval)
+    ;; Users can opt out, it's off by default
+    pairs
+
+    ;; If the user wants us to eval the session...
+    ;; Use a pREPL to do execution...
+    (map-indexed
+     (fn [idx {:keys [input] :as pair}]
+       (let [acc (atom [])
+             session-id session
+             bindings (merge bindings
+                             (and session-id
+                                  (get @+binding-registry+ session-id {})))]
+         ;; Note that we go single input at a time so that invalid syntax
+         ;; examples work, rather than killing the entire trace. This does
+         ;; however hose our line numbers.
+         (prepl (clojure.lang.LineNumberingPushbackReader.
+                 (java.io.StringReader. input))
+                (fn [{:keys [type val] :as res}]
+                  (swap! acc conj
+                         (cond
+                           ;; Handle return values by rendering them
+                           (= type ::prepl/ret)
+                           (assoc res ::val
+                                  (binding [*out* (java.io.StringWriter.)]
+                                    ((resolve-fn printer) val)
+                                    (.toString *out*)))
+
+                           ;; Handle end-of-session bindings by updating the profile
+                           (= type ::prepl/bindings)
+                           (do (when session-id
+                                 (swap! +binding-registry+
+                                        assoc session-id
+                                        (:bindings res)))
+                               res)
+
+                           ;; Pass on other values
+                           :else
+                           res)))
+                :bindings bindings
+                :ns namespace)
+
+         ;; Wait for a "close" message
+         (while (not (some #(= ::prepl/close (:type %)) @acc))
+           (Thread/sleep 100))
+
+         (let [results @acc
+               ret (first (filter #(= (:type %) ::prepl/ret) results))]
+           (assoc pair
+                  :results (vec results)
+                  :namespace (:ns ret)))))
+     pairs)))
+
 (defn evaluate-session
   "Given a parsed session structure, evaluate it (if evaluation was
   requested), returning an updated session."
   ([session]
    (evaluate-session (:profile session default-profile) session))
-  ([{:keys [dependencies namespace printer bindings] :as profile}
-    session]
+  ([profile session]
    ;; FIXME (arrdem 2018-07-08):
    ;;
    ;;   This is the shittiest possible implementation of taking a
@@ -201,57 +256,9 @@
    ;;   Ideally code execution would occur in a contained, parallel
    ;;   environment such as a boot pod or even a separate JVM, but
    ;;   here we are.
-   (update session
-           :pairs
-           (fn [pairs]
-             (if-not (or (:evaluate profile)
-                         (:eval profile)
-                         (:evaluate (:profile session))
-                         (:eval (:profile session)))
-               ;; Users can opt out, it's off by default
-               pairs
-
-               ;; If the user wants us to eval the session...
-               (let [acc (atom [])
-                     session-id (or (:session profile)
-                                    (:session (:profile session)))
-                     bindings (merge bindings
-                                     (:bindings (:profile session))
-                                     (and session-id
-                                          (get @+binding-registry+ session-id {})))]
-                 (prepl (clojure.lang.LineNumberingPushbackReader.
-                         (StringReader.
-                          (str/join "\n" (map :input pairs))))
-                        (fn [{:keys [type val] :as res}]
-                          (swap! acc conj
-                                 (cond
-                                   ;; Handle return values by rendering them
-                                   (= type ::prepl/ret)
-                                   (assoc res ::val
-                                          (binding [*out* (java.io.StringWriter.)]
-                                            ((resolve-fn printer) val)
-                                            (.toString *out*)))
-
-                                   ;; Handle end-of-session bindings by updating the profile
-                                   (= type ::prepl/bindings)
-                                   (do (when session-id
-                                         (swap! +binding-registry+
-                                                assoc session-id
-                                                (:bindings res)))
-                                       res)
-
-                                   ;; Pass on other values
-                                   :else
-                                   res)))
-                        :bindings bindings
-                        :ns namespace)
-                 (map-indexed (fn [idx pair]
-                                (let [results (filter #(= (:form-id %) idx) @acc)
-                                      ret (first (filter #(= (:type %) ::prepl/ret) results))]
-                                  (assoc pair
-                                         :results (vec results)
-                                         :namespace (:ns ret))))
-                              pairs)))))))
+   (let [active-profile (merge profile
+                               (:profile session))]
+     (update session :pairs evaluate-pairs active-profile))))
 
 (defn render-session
   "Given a parsed (and evaluated) session structure, render it to Hiccup."
