@@ -12,7 +12,7 @@
   {:type ::ret
    :val val ;;eval result
    :ns ns-name-string
-   :ms long ;;eval time in milliseconds
+   :nanos long ;; eval time in ns
    :form string} ;;iff successfully read
   {:type ::out
    :val string} ;chars from during-eval *out*
@@ -31,12 +31,14 @@
   naming the namespace in which evaluation should occur. By default,
   `user` is used."
   [in-reader out-fn &
-   {:keys [stdin ns bindings]
+   {:keys [stdin ns bindings capture-bindings]
     :or {ns 'user}}]
   (let [EOF (Object.)
         tapfn #(out-fn {:type ::tap
                         :val %1})
-        form-id (volatile! 0)]
+        form-id (volatile! 0)
+        bindings-to-capture (or capture-bindings
+                                (keys bindings))]
     (m/with-bindings
       (with-bindings (merge {#'*ns* (do (try (require ns)
                                              (catch Throwable t
@@ -51,7 +53,7 @@
               (when (try
                       (let [[form s] (read+string in-reader false EOF)]
                         (try
-                          (when-not (identical? form EOF)
+                          (if-not (identical? form EOF)
                             (let [start (System/nanoTime)
                                   ret (binding [*out* (PrintWriter-on #(out-fn {:type ::stream
                                                                                 :stream ::out
@@ -64,7 +66,7 @@
                                                                                 :form-id current-form-id})
                                                                       nil)]
                                         (eval form))
-                                  ms (quot (- (System/nanoTime) start) 1000000)]
+                                  ns (- (System/nanoTime) start)]
                               (when-not (= :repl/quit ret)
                                 (set! *3 *2)
                                 (set! *2 *1)
@@ -74,10 +76,16 @@
                                                 (Throwable->map ret)
                                                 ret)
                                          :ns (str (.name *ns*))
-                                         :ms ms
+                                         :nanos ns
                                          :form s
                                          :form-id current-form-id})
-                                true)))
+                                true))
+                            (when (not-empty s)
+                              (out-fn {:type ::incomplete
+                                       :ns (str (.name *ns*))
+                                       :form s
+                                       :form-id current-form-id})
+                              false))
                           (catch Throwable ex
                             (set! *e ex)
                             (out-fn {:type ::ret
@@ -98,16 +106,7 @@
                          {:type ::bindings
                           :form-id current-form-id
                           :bindings (select-keys (clojure.lang.Var/getThreadBindings)
-                                                 ;; REPL state defining a session
-                                                 ;; List from #'clojure.main/with-bindings
-                                                 ;;
-                                                 ;; One could choose to persist the entire binding state, but
-                                                 ;; ... idk how I feel about that.
-                                                 [#'*ns* #'*warn-on-reflection* #'*math-context* #'*print-meta*
-                                                  #'*print-length* #'*print-level* #'*print-namespace-maps*
-                                                  #'*data-readers* #'*default-data-reader-fn* #'*compile-path*
-                                                  #'*command-line-args* #'*unchecked-math* #'*assert*
-                                                  #'clojure.spec.alpha/*explain-out* #'*1 #'*2 #'*3 #'*e])})))
+                                                 bindings-to-capture)})))
                 (vswap! form-id inc)
                 (recur))))
           (finally

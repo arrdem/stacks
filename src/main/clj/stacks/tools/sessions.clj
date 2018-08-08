@@ -50,7 +50,13 @@
    :bindings {#'clojure.core/*print-namespace-maps* false
               ;;#'clojure.core/*print-length* 5
               ;;#'clojure.core/*print-level* 5
-              }})
+              }
+   ;; Bindings which will be captured for session continuity
+   :capture-bindings [#'*ns* #'*warn-on-reflection* #'*math-context*
+                      #'*print-meta* #'*print-length* #'*print-level* #'*print-namespace-maps*
+                      #'*data-readers* #'*default-data-reader-fn* #'*compile-path*
+                      #'*command-line-args* #'*unchecked-math* #'*assert*
+                      #'clojure.spec.alpha/*explain-out* #'*1 #'*2 #'*3 #'*e]})
 
 (defn make-pair-pattern
   "Constructs a pattern which matches the given prompt (or prompt
@@ -186,7 +192,7 @@
   (atom {}))
 
 (defn evaluate-pairs [pairs {:keys [evaluate eval session dependencies namespace
-                                    printer bindings]
+                                    printer bindings capture-bindings]
                              :as profile}]
   (if-not (or evaluate eval)
     ;; Users can opt out, it's off by default
@@ -228,7 +234,8 @@
                            :else
                            res)))
                 :bindings bindings
-                :ns namespace)
+                :ns namespace
+                :capture-bindings capture-bindings)
 
          (let [results @acc
                ret (first (filter #(= (:type %) ::prepl/ret) results))]
