@@ -18,7 +18,10 @@
 
 (def default-prompt-pattern
   "Default pattern for recognizing prompts.
-  Assumes that > is the prompt character, and that it may be followed by a bunch of whitespace."
+  
+  Assumes that > is the prompt character, and that it may be followed
+  by a bunch of whitespace."
+
   "[=]?>")
 
 (def default-profile
@@ -58,20 +61,24 @@
     (-> (format
          (str
           ;; This pattern is a bit involved.
-          ;; - Set dotall with (?s) so that . includes newlines and (?m) being multiline.
+          ;; 
+          ;; - Set dotall with (?s) so that . includes newlines
+          ;; - Set (?m) being multiline.
           "(?sm)"
           ;; - Match any preceding ";" comment lines
           "(?<comment>[\\s&&[^\n\r]]*;[^\n]*?\n)*?"
-          ;; - Match any text preceding the prompt pattern and assume it's the namespace
+          ;; - Match any text preceding the prompt pattern. We and assume it's
+          ;;   the namespace, but this text is really ignored when rendering.
+          ;; 
           ;; - Then match  the prompt
           "(^(?<namespace>[^\n\r\\s]*?)(?<prompt>%1$s))"
           ;; - Match (but do not capture!) whitespace greedily
           "(?:\\s*+)"
-          ;; - Match a bunch of text lazily, being the input form & trailing results.
+          ;; - Match the input form & trailing results lazily.
           "(?<input>.*?)"
-          ;; - Match either:
-          ;;   - The end of file
-          ;;   - (without capturing) a prompt, or subsequent comment
+          ;; Anchor the end of the match match to either:
+          ;; - The end of file
+          ;; - (without capturing) a prompt, or subsequent comment
           "((?=(^[^\n\r\\s]*?%1$s)|([\\s&&[^\n\r]]*;[^\n]*?\n))|\\Z)")
          p)
         (re-pattern))))
@@ -83,24 +90,27 @@
         [_match comment? _ namespace prompt text input] match
         ;; Make a mutable reader over the matched text.
         
-        ;; At this point the text contains both the input form, and the printed results of
-        ;; evaluation.
+        ;; At this point the text contains both the input form, and the printed
+        ;; results of evaluation.
         reader (StringReader. text)
         
         ;; Use rewrite-clj too parse the first form. This is the input form.
         ;;
-        ;; Unfortunately there may be syntax errors. Deal with this by producing a pair
-        ;; `[rdr, form?]` so that we can "reset" the reader when there are syntax errors.
+        ;; Unfortunately there may be syntax errors. Deal with this by producing
+        ;; a pair `[rdr, form?]` so that we can "reset" the reader when there
+        ;; are syntax errors.
 
-        ;; FIXME (arrdem 2017-12-10): In the case of a syntax error, the performance here is
-        ;;   pretty awful because we round-trip the string through a reader to another string
-        ;;   for no reason.
+        ;; FIXME (arrdem 2017-12-10): In the case of a syntax error, the
+        ;;   performance here is pretty awful because we round-trip the string
+        ;;   through a reader to another string for no reason.
         [reader form] (try [reader (read-source reader)]
                            (catch Exception e
-                             ;; Return a new Reader and pretend we didn't see anything.
+                             ;; Return a new Reader and pretend we didn't see
+                             ;; anything.
                              ;;
                              ;; FIXME (arrdem 2017-12-29):
-                             ;;   Is there a good way to enable users to capture this event?
+                             ;;   Is there a good way to enable users to capture
+                             ;;   this event?
                              [(StringReader. text) nil]))
 
         ;; Eat any whitespace between the end of the prompt form and the result
@@ -205,10 +215,10 @@
                (let [acc (atom [])
                      session-id (or (:session profile)
                                     (:session (:profile session)))
-                     bindings (or bindings
-                                  (:bindings (:profile session))
-                                  (and session-id
-                                       (get @+binding-registry+ session-id {})))]
+                     bindings (merge bindings
+                                     (:bindings (:profile session))
+                                     (and session-id
+                                          (get @+binding-registry+ session-id {})))]
                  (prepl (clojure.lang.LineNumberingPushbackReader.
                          (StringReader.
                           (str/join "\n" (map :input pairs))))
